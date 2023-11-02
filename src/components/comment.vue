@@ -216,6 +216,8 @@ function commentClick(index,nowID){
 //发送评论
 function sendComment(id){
 //1.id=-1时为视频评论，一级评论
+
+
   if(id==-1){
     console.log(myComment.value)
   }
