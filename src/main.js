@@ -7,7 +7,7 @@ import * as ElementPlusIconsVue from '@element-plus/icons-vue';
 import axios from 'axios'
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
-
+import mock from "./mock/index"
 
 
 // 设置基础访问路径
