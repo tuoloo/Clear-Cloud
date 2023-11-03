@@ -23,7 +23,6 @@
         <div class="fix-message">
           <el-button @click="fixMessage" type="info" plain>编辑资料</el-button>
         </div>
-
       </div>
       <div class="videoList">
         <div style="flex: 0.2"></div>
@@ -135,21 +134,35 @@
       <img :src="exit" class="exit-button" @click="exitClick">
       <PlayerVideo class="view-video-list" :info="cid" :serial="num"></PlayerVideo>
     </el-dialog>
-    <el-dialog class="add-work" v-model="visibleAddWork">
-      <div style="display: flex">
-        <div class="up-video">
+    <el-dialog class="add-work" v-model="visibleAddWork" style="width: 550px">
+      <div style="display: flex;flex-direction: column;align-items: center;justify-content: center;min-height:500px">
+        <div class="up-video" style="border: #2b333f solid 1px">
           <el-upload
               class="avatar-uploader"
               action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
               :show-file-list="false"
-              :on-success="handleAvatarSuccess"
-              :before-upload="beforeAvatarUpload"
+              :on-success="handleVideoSuccess"
+              :before-upload="beforeVideoUpload"
           >
-            <el-icon class="avatar-uploader-icon"><Plus /></el-icon>
+            <img v-if="imageUrl" :src="imageUrl" class="avatar" />
+            <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
           </el-upload>
         </div>
-        <div class="bottom-message">
-
+        <div class="bottom-message" style="margin-top: 30px">
+          <span>标题：</span>
+          <el-input v-model="titleContent"></el-input>
+          <el-select v-model="value" class="m-2" placeholder="选择视频分类" size="large" style="margin-top: 30px">
+            <el-option
+                v-for="item in options"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+            />
+          </el-select>
+        </div>
+        <div class="bottom-buttons" style="margin-top: 40px">
+          <el-button type="primary" @click="uploadVideo">确认</el-button>
+          <el-button @click="cancleUpload">取消</el-button>
         </div>
       </div>
     </el-dialog>
@@ -206,8 +219,8 @@
               class="avatar-uploader"
               action="http://192.168.212.129:14565/user/uploadAvatar"
               :show-file-list="false"
-              :on-success="handleAvatarSuccess1"
-              :before-upload="beforeAvatarUpload1"
+              :on-success="handleAvatarSuccess"
+              :before-upload="beforeAvatarUpload"
           >
             <img :src="userMessages.avatar" style="width: 120px;height: 120px;border-radius: 50%;" />
           </el-upload>
@@ -319,14 +332,14 @@ function fixMessage() {
   fixDialog.value = true;
 }
 // 头像上传成功处理
-const handleAvatarSuccess1 = (response, uploadFile) => {
+const handleAvatarSuccess = (response, uploadFile) => {
   //更改头像地址
   console.log(response)
   userMessages.value.avatar=response.data;
 }
 
 // 头像上传前处理
-const beforeAvatarUpload1 = (rawFile) => {
+const beforeAvatarUpload = (rawFile) => {
   if (rawFile.type !== 'image/jpeg') {
     ElMessage.error('图片格式必须是JPG!')
     return false
@@ -408,8 +421,6 @@ const handleClick = (tab, event) => {
       cid.value=tab.props.label;
 }
 
-//let
-
 const cid = ref('作品');
 const num=ref(0)
 //查看视频
@@ -434,21 +445,76 @@ let visibleAddWork=ref(false)
 function addWork(){
   visibleAddWork.value=true
 }
-//上传视频
-const handleAvatarSuccess = (response, uploadFile) => {
- //上传成功后
-  //重新获取视频源
+//视频分类
+const value = ref('')
+const options = [
+  {
+    value: 'Option1',
+    label: '美食',
+  },
+  {
+    value: 'Option2',
+    label: '娱乐',
+  },
+  {
+    value: 'Option3',
+    label: '动漫',
+  },
+  {
+    value: 'Option4',
+    label: '音乐',
+  },
+  {
+    value: 'Option5',
+    label: '时尚',
+  },
+  {
+    value: 'Option6',
+    label: '体育',
+  },
+  {
+    value: 'Option7',
+    label: '教育',
+  },
+  {
+    value: 'Option8',
+    label: '游戏',
+  },
 
-}
+]
+//视频标题
+let titleContent=ref('')
+
+//视频封面地址
+let imageUrl=ref('')
 
 //上传前处理
-const beforeAvatarUpload = (rawFile) => {
+const beforeVideoUpload = (rawFile) => {
   if (rawFile.type !== 'mp4') {
     ElMessage.error('视频类型不合法！')
     return false
   }
   return true
 }
+//成功上传视频
+const handleVideoSuccess = (response, uploadFile) => {
+ //上传成功后   获取封面地址
+  //重新获取视频源
+
+}
+//取消上传
+function cancleUpload(){
+  visibleAddWork.value=false
+}
+
+
+//确认上传
+function uploadVideo(){
+  //更新视频源头
+  //上传成功信息
+
+}
+
 
 //删除视频
 function handleConfirm(id){
