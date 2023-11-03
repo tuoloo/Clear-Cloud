@@ -37,7 +37,7 @@
         <div class="user-login">
           <button class="login-css" v-if="loginButton" @click="loginIn">登录</button>
           <div class="user-image" @click="toMy">
-              <img :src="userImage" style="width: 30px;height: 30px;border-radius: 50%;display: flex;align-items: center;">
+              <img :src="userImage" style="width: 40px;height: 40px;border-radius: 50%;display: flex;align-items: center;">
           </div>
         </div>
         <div style="flex: 0.2">
@@ -247,7 +247,8 @@ onMounted(() => {
 
   //用户是否登录判断头像
      if(localStorage.getItem('user')){
-      userImage.value=localStorage.getItem('user').data.avatar
+      userImage.value=JSON.parse(localStorage.getItem('user')).avatar
+       loginButton.value=false;
     }
 });
 //去往搜索页面
@@ -299,11 +300,12 @@ function login() {
         message: '登陆成功',
         type: 'success',
       })
+      console.log(res.data)
       //本地存储
-      localStorage.setItem('user',res.data)
+      localStorage.setItem('user',JSON.stringify(res.data))
       loginDialog.value=false;
       loginButton.value=false;
-      userImage.value=localStorage.getItem('user').data.avatar;
+      userImage.value=JSON.parse(localStorage.getItem('user')).avatar;
     } else {
       ElMessage({
         message: res.message,
@@ -319,9 +321,9 @@ function login() {
 
 // 注册
 function register() {
-  logoUser({
-        userEmail:registerForm.value.Email,
-        passWord:registerForm.value.password
+  signUser({
+        userEmail:registerForm.value.rEmail,
+        passWord:registerForm.value.rPassword
       }
   ).then(res => {
     if (res.code==1) {

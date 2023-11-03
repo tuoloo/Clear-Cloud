@@ -4,19 +4,19 @@
       <div class="topMessage">
         <div style="flex: 0.2"></div>
         <div class="user-image">
-          <img :src=userMessages.userImage>
+          <img :src=userMessages.avatar>
           <div class="user-message">
-            <span>{{ userMessages.userName }}</span>
+            <span>{{ userMessages.nickName }}</span>
             <div class="text1">
               关注
               <span @click="viewAttention"
-                    style="color: black;cursor: pointer">{{ userMessages.userAttentionNums }}</span>
+                    style="color: black;cursor: pointer">{{ userMessages.followCount }}</span>
               &nbsp; 粉丝
-              <span @click="viewFans" style="color: black;cursor: pointer">{{ userMessages.likeNums }}</span>
+              <span @click="viewFans" style="color: black;cursor: pointer">{{ userMessages.fanCount }}</span>
               &nbsp;获赞
-              <span style="color: black">{{ userMessages.userFanNums }}</span>
+              <span style="color: black">{{ userMessages.likedCount}}</span>
             </div>
-            <span class="text1">{{ userMessages.userWrite }}</span>
+            <span class="text1">{{ userMessages.signature }}</span>
           </div>
         </div>
         <div style="flex: 1"></div>
@@ -37,15 +37,7 @@
                       :xs="24" :sm="12" :md="8" :lg="4"
                   >
                     <el-card class="video-card">
-                      <el-upload
-                          class="avatar-uploader"
-                          action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
-                          :show-file-list="false"
-                          :on-success="handleAvatarSuccess"
-                          :before-upload="beforeAvatarUpload"
-                      >
-                        <el-icon class="avatar-uploader-icon"><Plus /></el-icon>
-                      </el-upload>
+                        <el-icon class="avatar-uploader-icon" @click="addWork"><Plus /></el-icon>
                     </el-card>
                   </el-col>
 <!--                  我的作品列-->
@@ -132,7 +124,6 @@
           </el-tabs>
         </div>
         <div style="flex: 0.2"></div>
-
       </div>
     </div>
     <el-dialog class="show-video"
@@ -143,6 +134,24 @@
     >
       <img :src="exit" class="exit-button" @click="exitClick">
       <PlayerVideo class="view-video-list" :info="cid" :serial="num"></PlayerVideo>
+    </el-dialog>
+    <el-dialog class="add-work" v-model="visibleAddWork">
+      <div style="display: flex">
+        <div class="up-video">
+          <el-upload
+              class="avatar-uploader"
+              action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
+              :show-file-list="false"
+              :on-success="handleAvatarSuccess"
+              :before-upload="beforeAvatarUpload"
+          >
+            <el-icon class="avatar-uploader-icon"><Plus /></el-icon>
+          </el-upload>
+        </div>
+        <div class="bottom-message">
+
+        </div>
+      </div>
     </el-dialog>
     <el-dialog class="attentions-list" v-model="visibleAttention" style="  padding: 10px;border-radius: 20px;">
       <el-scrollbar height="600px" style="min-width: 550px" >
@@ -195,19 +204,19 @@
         <el-form-item label="头像">
           <el-upload
               class="avatar-uploader"
-              action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
+              action="http://192.168.212.129:14565/user/uploadAvatar"
               :show-file-list="false"
               :on-success="handleAvatarSuccess1"
               :before-upload="beforeAvatarUpload1"
           >
-            <img :src="userMessagesCopy.userImage" style="width: 120px;height: 120px;border-radius: 50%;" />
+            <img :src="userMessages.avatar" style="width: 120px;height: 120px;border-radius: 50%;" />
           </el-upload>
         </el-form-item>
         <el-form-item label="名字">
-          <el-input v-model="userMessagesCopy.userName"/>
+          <el-input v-model="userMessagesCopy.nickName"/>
         </el-form-item>
         <el-form-item label="签名">
-          <el-input v-model="userMessagesCopy.userWrite"/>
+          <el-input v-model="userMessagesCopy.signature"/>
         </el-form-item>
         <el-form-item>
           <el-button color="#DF3636" :dark="isDark" @click="saveUserInfo">保存</el-button>
@@ -226,6 +235,7 @@ import {ElMessage, TabsPaneContext} from 'element-plus'
 import router from "@/router";
 import PlayerVideo from "@/components/PlayerVideo";
 import exit from "@/assets/image/exit.svg"
+import {getUserInformation,updateSelfInfo,uploadAvatar} from '@/api/userHandle'
 
 
 //个人主页的所有信息
@@ -239,14 +249,27 @@ let fanList = ref('')
 //初始化   视频列表要是ref数据
 onMounted(() => {
   //像后端发送请求个人信息  关注列表，粉丝列表 作品列表
+  // getUserInformation().then(res=>{
+  //   if(res.code==1){
+  //   userMessages.value=res.data;
+  // }else {
+  //     ElMessage({
+  //       message: res.message,
+  //       type: 'warning',
+  //     })
+  //   }
+  // })
   userMessages.value = {
-    userId: 1,
-    userImage: image1,
-    userName: "地球爆炸",
-    userWrite: "想死了，但是死的另有其人",
-    userAttentionNums: 12,
-    userFanNums: 123,
-    likeNums: 45
+    pkUserId: 52,
+    userEmail: "3157904941@qq.com",
+    nickName: "清云-user",
+    avatar: "http://s32vad0na.bkt.clouddn.com/default_avatar.jpeg",
+    signature: null,
+    followCount: 0,
+    fanCount: 0,
+    likedCount: 0,
+    collectCount: 0,
+    workCount: 0
   }
   attentionList.value = [{
     userId: 101,
@@ -288,7 +311,6 @@ onMounted(() => {
   }
   ]
   userMessagesCopy.value = JSON.parse(JSON.stringify(userMessages.value))
-  console.log(attentionList.value)
 });
 
 //修改信息
@@ -300,8 +322,7 @@ function fixMessage() {
 const handleAvatarSuccess1 = (response, uploadFile) => {
   //更改头像地址
   console.log(response)
-  // userMessagesCopy.value.userImage = URL.createObjectURL(uploadFile.raw)
-
+  userMessages.value.avatar=response.data;
 }
 
 // 头像上传前处理
@@ -318,9 +339,16 @@ const beforeAvatarUpload1 = (rawFile) => {
 
 //保存修改信息
 function saveUserInfo() {
+  // 将暂存变量的值赋给 userMessages.userName
+  userMessages.value = userMessagesCopy.value;
   //将数据发到后端
-  userMessages.value = userMessagesCopy.value; // 将暂存变量的值赋给 userMessages.userName
-
+  updateSelfInfo({
+    pkUserId:userMessages.value.pkUserId,
+    nickName:userMessages.value.nikeName,
+    signature:userMessages.value.signature
+  }).then(res=>{
+    ElMessage.success("修改成功")
+  })
   fixDialog.value = false; // 关闭编辑框
 }
 
@@ -399,6 +427,13 @@ function exitClick(){
 
 }
 
+//增加视频
+let visibleAddWork=ref(false)
+
+//点击增加作品按钮
+function addWork(){
+  visibleAddWork.value=true
+}
 //上传视频
 const handleAvatarSuccess = (response, uploadFile) => {
  //上传成功后

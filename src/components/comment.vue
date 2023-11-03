@@ -1,7 +1,7 @@
 <template>
   <div class="commentArea">
     <div class="top">
-      <div v-if="!isLogin" class="father-input">
+      <div v-if="isLogin" class="father-input">
         <!--        <img :src="userMessage.avatar" class="user-image">-->
         <img src="../assets/image/test.jpg" class="user-image">
         <el-input v-model="myComment" placeholder="请输入评论...."></el-input>
@@ -14,7 +14,7 @@
       <div class="first-comment"
            v-for="(item,index) in comments">
         <div class="comment-message">
-          <img :src="item.avatar" class="user-image">
+          <img :src="item.avatar" class="user-image" @click="toUser(item.pkUserId)">
           <div class="user-message">
             <span class="name-css">{{item.nickName}}</span>
             <span class="time-css">{{item.time}}</span>
@@ -37,7 +37,7 @@
              v-for="(item0,index0) in item.reply"
              v-if="item.isVisible">
           <div class="comment-message">
-            <img :src="item0.avatar" class="user-image">
+            <img :src="item0.avatar" class="user-image" @click=toUser(item0.pkUserId)>
             <div class="user-message">
               <span class="name-css">{{item0.nickName}}</span>
               <span class="time-css">{{item0.time}}</span>
@@ -74,6 +74,7 @@
 
 import {defineProps, onMounted, ref} from "vue";
 import {ElMessage} from "element-plus";
+import router from "@/router";
 
 const comments = ref('')
 const userMessage = ref('')//我的个人信息
@@ -251,6 +252,13 @@ function bindChild(){
     comment.isVisible = false;
     comment.isComment=false;
   }
+}
+//去往他人主页
+//跳转到他人主页
+// 传递 ID 给下一个页面
+function toUser(userID) {
+  const routeData = router.resolve({name: 'otherPage', query: {'userId':userID}});
+  window.open(routeData.href, '_blank');
 }
 
 </script>
