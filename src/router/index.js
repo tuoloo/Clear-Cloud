@@ -30,15 +30,15 @@ const router=createRouter({
                     path:'ownPage',
                     name:'ownPage',
                     component:ownPage,
-                    //判断是否登陆代码
-                    // beforeEnter:(to,form,next)=>{
-                    //     if (!localStorage.getItem('user')) {
-                    //         ElMessage.error('您还未登录')
-                    //             router.push('/')
-                    //     } else {
-                    //         next();
-                    //     }
-                    // }
+                    // 判断是否登陆代码
+                    beforeEnter:(to,form,next)=>{
+                        if (!localStorage.getItem('user')) {
+                            ElMessage.error('您还未登录')
+                                router.push('/')
+                        } else {
+                            next();
+                        }
+                    }
                 },
                 //他人主页
                 {

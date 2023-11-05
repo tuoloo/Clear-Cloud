@@ -139,10 +139,12 @@
         <div class="up-video" style="border: #2b333f solid 1px">
           <el-upload
               class="avatar-uploader"
-              action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
+              action="http://192.168.200.129:14565/video/uploadVideo"
+              :headers="headers"
               :show-file-list="false"
               :on-success="handleVideoSuccess"
               :before-upload="beforeVideoUpload"
+              name="video"
           >
             <img v-if="imageUrl" :src="imageUrl" class="avatar" />
             <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
@@ -221,6 +223,8 @@
               :show-file-list="false"
               :on-success="handleAvatarSuccess"
               :before-upload="beforeAvatarUpload"
+              :headers="headers"
+              name="avatar"
           >
             <img :src="userMessages.avatar" style="width: 120px;height: 120px;border-radius: 50%;" />
           </el-upload>
@@ -250,6 +254,9 @@ import PlayerVideo from "@/components/PlayerVideo";
 import exit from "@/assets/image/exit.svg"
 import {getUserInformation,updateSelfInfo,uploadAvatar} from '@/api/userHandle'
 
+let token = JSON.parse(localStorage.getItem('user')).access_token;
+console.log(token)
+const headers={"Authorization":"Bearer "+token}
 
 //个人主页的所有信息
 const userMessages = ref('')
@@ -487,10 +494,11 @@ let titleContent=ref('')
 
 //视频封面地址
 let imageUrl=ref('')
+let videoURL=ref('')
 
 //上传前处理
 const beforeVideoUpload = (rawFile) => {
-  if (rawFile.type !== 'mp4') {
+  if (rawFile.type != 'video/mp4') {
     ElMessage.error('视频类型不合法！')
     return false
   }
@@ -499,14 +507,14 @@ const beforeVideoUpload = (rawFile) => {
 //成功上传视频
 const handleVideoSuccess = (response, uploadFile) => {
  //上传成功后   获取封面地址
-  //重新获取视频源
-
+ imageUrl.value= response.data.coverURL
+  //获取视频地址
+  videoURL.value= response.data.videoURL
 }
 //取消上传
 function cancleUpload(){
   visibleAddWork.value=false
 }
-
 
 //确认上传
 function uploadVideo(){

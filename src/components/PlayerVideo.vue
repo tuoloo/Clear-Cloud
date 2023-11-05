@@ -27,7 +27,7 @@
         />
         <div>
           <el-avatar @click="toUser" style="width: 50px;height: 50px"
-                     :src=videoMessageNow.AuthorVO.avatar>
+                     :src=videoMessageNow.authorVO.avatar>
           </el-avatar>
         </div>
 
@@ -67,7 +67,7 @@
       <div class="video-messages">
         <div class="m1">
           <span>
-            {{ videoMessageNow.AuthorVO.nikeName }}
+            {{ videoMessageNow.authorVO.nikeName }}
           </span>
           <span
               style="font-size: 12px;">{{ '\u00a0' }}{{ '\u00a0' }}{{ '\u00a0' }}{{ '\u00a0' }}{{
@@ -109,6 +109,7 @@ import testImage from '@/assets/image/test2.jpg'
 import comment from '@/components/comment'
 import Comment from "@/components/comment";
 import {ElMessage} from "element-plus";
+import {videoLoad} from "@/api/videoHandle";
 
 let player = null;//绑定当前videojs
 const props = defineProps({
@@ -125,14 +126,15 @@ let videoResources = ref([]);//视频源集合
 let cid = ref('')//评论区绑定
 
 // 初始化，获取视频源
-onMounted(() => {
+onMounted(  async () => {
       console.log("初始化了一次")
-      try {
         if (player != null)
           player.dispose()
         // 从API获取视频源的函数，用实际方法代替   初始值是推荐
-        videoResources = getResources();
+        videoResources.value =await getResources();
         console.log(props.info)
+        console.log(currentVideoIndex.value)
+        console.log(videoResources.value)
         videoMessageNow.value = videoResources.value[currentVideoIndex.value];//更新当前视频
         isDataLoaded.value = true; // 数据加载完成，可以渲染视频组件
         //评论区是否更新需要检测
@@ -142,148 +144,29 @@ onMounted(() => {
         setTimeout(() => {
           bindCurrentVideo()
         }, 10)
-      } catch (error) {
-        console.error('Failed to fetch video source:', error);
-      }
     }
 );
 
 //取得数据
-function getResources() {
-  console.log("内容:" + props.info + "标签:" + props.tip + "序号：" + props.serial)
-  //对于不是在视频播放的主页面查看视频，会获取一个序号，定向查看
+async function getResources() {
+  console.log("内容:" + props.info + "标签:" + props.tip + "序号：" + props.serial);
   if (props.serial) {
-    currentVideoIndex.value = props.serial
+    currentVideoIndex.value = props.serial;
   } else {
-    currentVideoIndex.value = 0
+    currentVideoIndex.value = 0;
   }
-  //是否是搜索
   if (props.tip) {
-    console.log(props.target)
+    console.log(props.target);
   }
-  //设置视频源头   向后端请求  或者父容器传递视频源
-
-  const m1 = ref([{
-    pkVideoId: 1,
-    AuthorVO:
-        {
-          pkUserId: 1,
-          nikeName: 1,
-          avatar: 1,
-          signature: 1,
-          isFollow: 1
-        },
-    type: 1,
-    videoDescription: 1,
-    videoCover: 1,
-    playUrl: 1,
-    likedCount: 1,
-    commentedCount: 1,
-    collectedCount: 1,
-    isLike: 1,
-    isCollect: 1,
+  try {
+    const res = await videoLoad({}); // 使用 await 等待 videoLoad({}) 的结果
+    return res.data; // 返回获取的数据
+  } catch (error) {
+    console.error('Failed to fetch video source:', error);
+    return null; // 返回空值或者其他适当的错误处理
   }
-  ])
-  return ref([
-    {
-      id: 1001,
-      writer: {
-        writerName: "jack", witerImage: "", writerId: 101
-      },
-      title: "你好吗？",
-      time: "2022-03-21",
-      videoSrc: "http://s32vad0na.bkt.clouddn.com/%E8%A7%86%E9%A2%912.mp4",
-      posterSrc: "",
-      isLiked: true,
-      isEnshrine: false,
-      likenums: 10,
-      enshrinenums: 125,
-      commentnums: 21,
-      share: 20,
-      target: "大家都别想活"
-    },
-    {
-      id: 1002,
-      writer: {
-        writerName: "jack", witerImage: "", writerId: 102
-      },
-      title: "你不好？",
-      time: "2022-03-21",
-      videoSrc: "http://s32vad0na.bkt.clouddn.com/test-video10.mp4",
-      isLiked: true,
-      isEnshrine: false,
-      likenums: 10,
-      enshrinenums: 155,
-      commentnums: 21,
-      share: 20,
-      target: "大家都别想活"
-    },
-    {
-      id: 1003,
-      writer: {
-        writerName: "jack", witerImage: "", writerId: 103
-      },
-      title: "你好二分法吗？",
-      time: "2022-03-21",
-      videoSrc: "http://s32vad0na.bkt.clouddn.com/test-video3.mp4",
-      isLiked: true,
-      isEnshrine: false,
-      likenums: 100,
-      enshrinenums: 145,
-      commentnums: 21,
-      share: 20,
-      target: "大家都别想活"
-    },
-    {
-      id: 1003,
-      writer: {
-        writerName: "jack", witerImage: "", writerId: 104
-      },
-      title: "你好吗？",
-      time: "2022-03-21",
-      videoSrc: "http://s32vad0na.bkt.clouddn.com/test-video2.mp4",
-      isLiked: true,
-      isEnshrine: true,
-      likenums: 100,
-      enshrinenums: 145,
-      commentnums: 21,
-      share: 20,
-      target: "大家都别想活"
-    },
-    {
-      id: 1003,
-      writer: {
-        writerName: "jack", witerImage: "", writerId: 105
-      },
-      title: "你好吗？",
-      time: "2022-03-21",
-      videoSrc: "http://s32vad0na.bkt.clouddn.com/test-video3.mp4",
-      isLiked: true,
-      isEnshrine: true,
-      likenums: 100,
-      enshrinenums: 127,
-      commentnums: 21,
-      share: 20,
-      target: "大家都别想活"
-    },
-    {
-      id: 1004,
-      writer: {
-        writerName: "jack", witerImage: "", writerId: 101
-      },
-      title: "你好吗？",
-      time: "2022-03-21",
-      videoSrc: "http://s32vad0na.bkt.clouddn.com/test-video4.mp4",
-      isLiked: true,
-      isEnshrine: true,
-      likenums: 100,
-      enshrinenums: 725,
-      commentnums: 21,
-      share: 20,
-      target: "大家都别想活"
-    },
-  ]);
 }
+
 
 //更改背景的url
 function changeBackgroud() {
@@ -451,7 +334,7 @@ function updateVideo() {
 // 传递 ID 给下一个页面
 function toUser() {
   // / 获取用户 ID
-  const userId = videoResources.value[currentVideoIndex.value].AuthorVO.pkUserId;
+  const userId = videoResources.value[currentVideoIndex.value].authorVO.pkUserId;
   const routeData = router.resolve({name: 'otherPage', query: {'userId': userId}});
   window.open(routeData.href, '_blank');
 }

@@ -27,12 +27,11 @@
         <div class="search-css">
           <el-input v-model="searchText" class="w-50 m-2" placeholder="输入搜索内容">
             <template #prefix>
-              <el-icon class="el-input__icon" @click="searchInput">
+              <el-icon class="el-input__icon" @click="searchInput" style="cursor: pointer">
                 <search/>
               </el-icon>
             </template>
           </el-input>
-          <button @click="searchInput" class="search-button">搜索</button>
         </div>
         <div class="user-login">
           <button class="login-css" v-if="loginButton" @click="loginIn">登录</button>
@@ -367,7 +366,67 @@ const confirmFunc = () => {
   /*background-color: #42b983;*/
   overflow: hidden;
   display: flex;
-  flex-direction: row-reverse;
+  border-right: #c1c3c852 solid 1.5px;
+}
+
+.sidebar {
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: arial, "Hiragino Sans GB", "Microsoft Yahei", sans-serif;
+  width: 170px;
+  color: #706969
+}
+
+.logo {
+  height: 50px;
+  width: 88%;
+  margin-top: 20px;
+  margin-left: auto;
+}
+
+.sidebar-items {
+  flex: 1;
+  margin-top: 10px;
+  width: 100%;
+}
+
+.sidebar-items ul {
+  list-style: none;
+  margin: 0;
+  padding-left: 5px;
+  display: flex;
+  flex-direction: column;
+}
+
+.category-icon {
+width: 22px;
+height: 22px;
+margin-right: 10px; /* 添加一些右边距以分隔图标和文本 */
+}
+
+.sidebar-items ul li {
+  cursor: pointer;
+  align-items: center;
+  font-size: 15px;
+  height: 50px;
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.sidebar-items ul li.active {
+  color: black;
+  background-color: #F7F7F7;
+  border-radius: 15px;
+}
+
+.sidebar-items ul li:hover {
+  color: black;
+  background-color: #F7F7F7;
+  border-radius: 15px;
 }
 
 .right {
@@ -379,9 +438,11 @@ const confirmFunc = () => {
 }
 
 .top {
-  height: 80px;
+  height: 60px;
   display: flex;
   align-items: center;
+  border-bottom: #c1c3c852 solid 1.5px;
+  margin-bottom: 15px;
 }
 
 .search-css {
@@ -453,77 +514,13 @@ const confirmFunc = () => {
 
 .play-video {
   position: absolute;
-  width: 100%;
+  width: 98%;
   height: 95%;
   border-radius: 20px;
-  box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+  border: #8A8B90 solid 0.2px;
+  margin-left: 15px;
 }
 
-.sidebar {
-  position: fixed;
-  color: #fff;
-  display: flex;
-  flex-direction: column;
-  padding: 0px 5px 0px 5px;
-  align-items: center;
-  font-family: arial, "Hiragino Sans GB", "Microsoft Yahei", sans-serif;
-  margin-left: 20px;
-  width: 170px;
-}
-
-.logo {
-  height: 50px;
-  width: 88%;
-  margin-top: 20px;
-  margin-left: auto;
-}
-
-.sidebar-items {
-  flex: 1;
-  margin-top: 10px;
-  width: 100%;
-}
-
-.sidebar-items ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  width: 90%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-
-.category-icon {
-  width: 22px;
-  height: 22px;
-  margin-right: 10px; /* 添加一些右边距以分隔图标和文本 */
-}
-
-.sidebar-items ul li {
-  cursor: pointer;
-  align-items: center;
-  font-size: 15px;
-  height: 50px;
-  color:#393b49;
-  display: flex;
-  width: 80%;
-  justify-content: center;
-  margin-bottom: 3px;
-}
-
-.sidebar-items ul li.active {
-  background-color: rgba(85, 85, 85, 0.28);
-  border-radius: 15px;
-  color: white;
-}
-
-.sidebar-items ul li:hover {
-  background-color: rgba(85, 85, 85, 0.34);
-  border-radius: 15px;
-  color: white;
-}
 .layout {
   background-color: white;
   position: absolute;

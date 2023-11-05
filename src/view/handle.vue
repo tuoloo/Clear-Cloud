@@ -1,47 +1,54 @@
 <template>
-  <div class="body">
-    <div class="left">
-      <div class="sidebar">
-        <div class="logo">
-          <img :src=logo style="height: 50px;">
+      <div class="body">
+        <div class="left">
+          <div class="sidebar">
+            <div class="logo">
+              <img :src=logo style="height: 50px;">
+            </div>
+            <div class="sidebar-items">
+              <ul>
+                <li
+                    v-for="(item, index) in sidebarItems"
+                    :key="index"
+                    @click="selectCategory(index)"
+                    :class="{ 'active': selectedCategory === index }"
+                >
+                  <img :src="item.image" alt="Category Icon" class="category-icon"/>
+                  {{ item.text }}
+                </li>
+              </ul>
+            </div>
+          </div>
         </div>
-        <div class="sidebar-items">
-          <ul>
-            <li
-                v-for="(item, index) in sidebarItems"
-                :key="index"
-                @click="selectCategory(index)"
-            >
-              <img :src="item.image" alt="Category Icon" class="category-icon"/>
-              {{ item.text }}
-            </li>
-          </ul>
+        <div class="right">
+          <div class="top">
+            <div style="flex: 1">
+            </div>
+            <div class="search-css">
+              <el-input v-model="searchText" class="w-50 m-2" placeholder="输入搜索内容">
+                <template #prefix>
+                  <el-icon class="el-input__icon" @click="searchInput" style="cursor: pointer">
+                    <search/>
+                  </el-icon>
+                </template>
+              </el-input>
+            </div>
+            <div class="user-login">
+              <button class="login-css" v-if="loginButton" @click="loginIn">登录</button>
+              <div class="user-image" @click="toMy">
+                <img :src="userImage" style="width: 40px;height: 40px;border-radius: 50%;display: flex;align-items: center;">
+              </div>
+            </div>
+            <div style="flex: 0.2">
+            </div>
+          </div>
+          <div class="bottom">
+            <router-view></router-view>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="right">
-      <div class="top">
-        <div style="flex: 1">
-        </div>
-        <div class="search-css">
-          <el-input v-model="searchText" class="w-50 m-2" placeholder="输入搜索内容">
-            <template #prefix>
-              <el-icon class="el-input__icon" @click="searchInput">
-                <search/>
-              </el-icon>
-            </template>
-          </el-input>
-          <button @click="searchInput" class="search-button">搜索</button>
-        </div>
-        <div style="flex: 1">
-        </div>
-      </div>
-      <div class="bottom">
-        <router-view></router-view>
-      </div>
-    </div>
-  </div>
-</template>
+    </template>
+
 
 <script setup>
 import {onMounted, ref} from "vue";
@@ -68,8 +75,6 @@ import image10 from "@/assets/image/education0.svg"
 import image010 from "@/assets/image/education.svg"
 import image11 from "@/assets/image/game0.svg"
 import image011 from "@/assets/image/game.svg"
-import ownPage from "@/components/ownPage"
-import OwnPage from "@/components/ownPage";
 import router from "@/router";
 
 //输入框内容
@@ -118,6 +123,7 @@ function searchInput() {
 </script>
 
 <style scoped>
+
 .body {
   display: flex;
   flex-direction: row;
@@ -130,7 +136,67 @@ function searchInput() {
   /*background-color: #42b983;*/
   overflow: hidden;
   display: flex;
-  flex-direction: row-reverse;
+  border-right: #c1c3c852 solid 1.5px;
+}
+
+.sidebar {
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: arial, "Hiragino Sans GB", "Microsoft Yahei", sans-serif;
+  width: 170px;
+  color: #706969
+}
+
+.logo {
+  height: 50px;
+  width: 88%;
+  margin-top: 20px;
+  margin-left: auto;
+}
+
+.sidebar-items {
+  flex: 1;
+  margin-top: 10px;
+  width: 100%;
+}
+
+.sidebar-items ul {
+  list-style: none;
+  margin: 0;
+  padding-left: 5px;
+  display: flex;
+  flex-direction: column;
+}
+
+.category-icon {
+  width: 22px;
+  height: 22px;
+  margin-right: 10px; /* 添加一些右边距以分隔图标和文本 */
+}
+
+.sidebar-items ul li {
+  cursor: pointer;
+  align-items: center;
+  font-size: 15px;
+  height: 50px;
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.sidebar-items ul li.active {
+  color: black;
+  background-color: #F7F7F7;
+  border-radius: 15px;
+}
+
+.sidebar-items ul li:hover {
+  color: black;
+  background-color: #F7F7F7;
+  border-radius: 15px;
 }
 
 .right {
@@ -142,9 +208,11 @@ function searchInput() {
 }
 
 .top {
-  height: 80px;
+  height: 60px;
   display: flex;
   align-items: center;
+  border-bottom: #c1c3c852 solid 1.5px;
+  margin-bottom: 15px;
 }
 
 .search-css {
@@ -170,178 +238,27 @@ function searchInput() {
   min-height: 35px;
 }
 
-.bottom {
+.user-login {
   flex: 1;
-  /*background-color: black;*/
-  position: relative;
-}
-
-.sidebar {
-  position: fixed;
-  color: #fff;
+  flex-direction: row-reverse;
   display: flex;
-  flex-direction: column;
-  padding: 0px 5px 0px 5px;
-  align-items: center;
-  font-family: arial, "Hiragino Sans GB", "Microsoft Yahei", sans-serif;
-  margin-left: 20px;
-  width: 170px;
+}
+.user-image{
+  margin-right: 10px;
 }
 
-.logo {
-  height: 50px;
-  width: 88%;
-  margin-top: 20px;
-  margin-left: auto;
-}
-
-.sidebar-items {
-  flex: 1;
-  margin-top: 10px;
-  width: 100%;
-}
-
-.sidebar-items ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  width: 90%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-
-.category-icon {
-  width: 22px;
-  height: 22px;
-  margin-right: 10px; /* 添加一些右边距以分隔图标和文本 */
-}
-
-.sidebar-items ul li {
-  cursor: pointer;
-  align-items: center;
-  font-size: 15px;
-  height: 50px;
-  color: #393b49;
-  display: flex;
-  width: 80%;
-  justify-content: center;
-  margin-bottom: 3px;
-}
-
-.sidebar-items ul li.active {
-  background-color: rgba(85, 85, 85, 0.28);
-  border-radius: 15px;
-  color: white;
-}
-
-.sidebar-items ul li:hover {
-  background-color: rgba(85, 85, 85, 0.34);
-  border-radius: 15px;
-  color: white;
-}
-.layout {
-  background-color: white;
-  position: absolute;
-  left: calc(50% - 250px);
-  top: 20%;
-  width: 700px;
-  height: 300px;
-  display: flex;
-  border-radius: 15px;
-  overflow: hidden;
-}
-
-.leftDialog {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  flex-direction: column;
-  justify-content: center;
-
-}
-
-.rightDialog {
-  flex: 1;
-}
-
-.loginBtn {
-  width: 100px;
-}
-
-.loginForm {
-  text-align: center;
-}
-
-.checkBox {
-  margin-left: 7px;
-}
-
-.inpWidth {
-  width: 165px;
-}
-.text{
-  color: cornflowerblue;
-  font-size: 25px;
-  margin-top: 5px;
-}
-
-.text:hover {
-  animation: animate 0.5s linear infinite;
-}
-@keyframes animate {
-
-  0%,
-  25% {
-    text-shadow: 2px 2px 2px #ff6384;
-  }
-
-  50% {
-    text-shadow: 2px -2px 2px #ff6384;
-  }
-
-  75% {
-    text-shadow: -2px 2px 2px #ff6384;
-  }
-
-  100% {
-    text-shadow: -2px -2px 2px #ff6384;
-  }
-}
-
-.text2{
-  background: #EEE url(../assets/image/background1.png) repeat;
-  text-shadow: 5px -5px #047ef99e, 4px -4px white;;
-  font-weight: bold;
-  -webkit-text-fill-color: transparent;
-  -webkit-background-clip: text;
-  font-size: 20px;
-}
-.btn {
-  background: #eb94d0;
-  /* 创建渐变 */
-  background-image: -webkit-linear-gradient(top, #eb94d0, #2079b0);
-  background-image: -moz-linear-gradient(top, #eb94d0, #2079b0);
-  background-image: -ms-linear-gradient(top, #eb94d0, #2079b0);
-  background-image: -o-linear-gradient(top, #eb94d0, #2079b0);
-  background-image: linear-gradient(to bottom, #eb94d0, #2079b0);
-  /* 给按钮添加圆角 */
-  -webkit-border-radius: 28px;
-  -moz-border-radius: 28px;
-  border-radius: 28px;
-  text-shadow: 3px 2px 1px #9daef5;
-  -webkit-box-shadow: 6px 5px 24px #666666;
-  -moz-box-shadow: 6px 5px 24px #666666;
-  box-shadow: 6px 5px 24px #666666;
-  font-family: Arial;
+.login-css{
+  background: rgba(217, 87, 139, 0.99);
+  background-image: linear-gradient(to bottom, rgba(217, 87, 139, 0.88), rgba(35, 196, 224, 0.82));
+  border-radius: 11px;
   color: #fafafa;
-  font-size: 27px;
-  padding: 19px;
-  text-decoration: none;
+  font-size: 15px;
+  cursor: pointer;
+  border: none;
+  width: 50px;
 }
 /* 悬停样式 */
-.btn:hover {
+.login-css:hover {
   background: #2079b0;
   background-image: -webkit-linear-gradient(top, #2079b0, #eb94d0);
   background-image: -moz-linear-gradient(top, #2079b0, #eb94d0);
@@ -349,5 +266,11 @@ function searchInput() {
   background-image: -o-linear-gradient(top, #2079b0, #eb94d0);
   background-image: linear-gradient(to bottom, #2079b0, #eb94d0);
   text-decoration: none;
+}
+
+.bottom {
+  flex: 1;
+  /*background-color: black;*/
+  position: relative;
 }
 </style>
