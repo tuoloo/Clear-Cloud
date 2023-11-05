@@ -5,7 +5,7 @@ import {Message} from "@element-plus/icons-vue";
 axios.defaults.withCredentials = true
 const http = axios.create({
     //'api'是指把当前启动项目的url作为baseURL
-    baseURL: "http://192.168.200.129:14565",
+    baseURL: "http://192.168.50.134:14565",
     timeout: 1000 * 5,//超时时间，单位毫秒,
 })
 

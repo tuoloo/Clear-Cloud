@@ -34,7 +34,7 @@
         <div class="button-var">
           <img
               @click="toggleLike(1)"
-              :src="videoMessageNow.isLiked ? like : like0"
+              :src="videoMessageNow.like ? like : like0"
               alt="Like Button"
           />
           {{ videoMessageNow.likedCount }}
@@ -51,7 +51,7 @@
         <div class="button-var">
           <img
               @click="toggleLike(0)"
-              :src="videoMessageNow.isCollect ? enshrine : enshrine0"
+              :src="videoMessageNow.collect ? enshrine : enshrine0"
               alt="enshrine Button"
           />
           {{ videoMessageNow.enshrinenums }}
@@ -67,12 +67,11 @@
       <div class="video-messages">
         <div class="m1">
           <span>
-            {{ videoMessageNow.authorVO.nikeName }}
+            @{{ videoMessageNow.authorVO.nickName }}
           </span>
           <span
-              style="font-size: 12px;">{{ '\u00a0' }}{{ '\u00a0' }}{{ '\u00a0' }}{{ '\u00a0' }}{{
-              '\u00a0'
-            }}{{ videoMessageNow.createTime }}
+              style="font-size: 12px;">{{ '\u00a0' }}{{ '\u00a0' }}{{ '\u00a0' }}{{ '\u00a0' }}{{'\u00a0' }}
+            {{ videoMessageNow.createTime }}
           </span>
         </div>
         <div class="m2">
@@ -87,7 +86,7 @@
     </div>
     <!--    评论区-->
     <div class="commentArea" v-if=ifShow>
-      <comment :info="cid"></comment>
+      <comment :info="cid" v-model:count=videoMessage ></comment>
     </div>
   </div>
 </template>
@@ -109,7 +108,7 @@ import testImage from '@/assets/image/test2.jpg'
 import comment from '@/components/comment'
 import Comment from "@/components/comment";
 import {ElMessage} from "element-plus";
-import {videoLoad} from "@/api/videoHandle";
+import {videoLoad, likeVideo, cancelLikeVideo, collectVideo, cancelCollectVideo} from "@/api/videoHandle";
 
 let player = null;//绑定当前videojs
 const props = defineProps({
@@ -126,24 +125,24 @@ let videoResources = ref([]);//视频源集合
 let cid = ref('')//评论区绑定
 
 // 初始化，获取视频源
-onMounted(  async () => {
+onMounted(async () => {
       console.log("初始化了一次")
-        if (player != null)
-          player.dispose()
-        // 从API获取视频源的函数，用实际方法代替   初始值是推荐
-        videoResources.value =await getResources();
-        console.log(props.info)
-        console.log(currentVideoIndex.value)
-        console.log(videoResources.value)
-        videoMessageNow.value = videoResources.value[currentVideoIndex.value];//更新当前视频
-        isDataLoaded.value = true; // 数据加载完成，可以渲染视频组件
-        //评论区是否更新需要检测
-        cid.value = videoResources.value[currentVideoIndex.value].pkVideoId;//更新评论区
-        changeBackgroud();//更换背景
-        //绑定当前视频
-        setTimeout(() => {
-          bindCurrentVideo()
-        }, 10)
+      if (player != null)
+        player.dispose()
+      // 从API获取视频源的函数，用实际方法代替   初始值是推荐
+      videoResources.value = await getResources();
+      console.log(props.info)
+      console.log(currentVideoIndex.value)
+      console.log(videoResources.value)
+      videoMessageNow.value = videoResources.value[currentVideoIndex.value];//更新当前视频
+      isDataLoaded.value = true; // 数据加载完成，可以渲染视频组件
+      //评论区是否更新需要检测
+      cid.value = videoResources.value[currentVideoIndex.value].pkVideoId;//更新评论区
+      changeBackgroud();//更换背景
+      //绑定当前视频
+      setTimeout(() => {
+        bindCurrentVideo()
+      }, 10)
     }
 );
 
@@ -199,29 +198,34 @@ function changeBackgroud() {
 function bindCurrentVideo() {
   console.log("绑定了一次")
   player = videojs('videoPlayer', {
-    autoplay: true, // 自动播放
+    controls: true, // 是否显示控制条
+    poster: 'xxx', // 视频封面图地址
+    preload: 'auto',
+    autoplay: true,
+    language: 'zh-CN', // 设置语言
+    muted: false, // 是否静音
+    inactivityTimeout: false,
     controlBar: { // 设置控制条组件
-      // 设置控制条里面组件的相关属性及显示与否
-      currentTimeDisplay: true,// 是否显示当前播放时间
-      durationDisplay: true, // 是否显示总时长
-      remainingTimeDisplay: true, // 是否显示剩余时间
-      playbackRateMenuButton: true,  //播放速率
-      // children: [
-      //   {name: 'playToggle'}, // 播放按钮
-      //   {name: 'currentTimeDisplay'}, // 当前已播放时间
-      //   {
-      //     name: 'volumePanel', // 音量控制
-      //     inline: false, // 不使用水平方式
-      //   },
-      //   {name: 'progressControl'}, // 播放进度条
-      //   { name:'playbackRateMenuButton'},  //播放速率}
-      //   {name: 'durationDisplay'}, // 总时间
-      //   { // 倍数播放
-      //     name: 'playbackRateMenuButton',
-      //     'playbackRates': [0.5, 1, 1.5, 2, 2.5]
-      //   },
-      //   {name: 'FullscreenToggle'} // 全屏
-      // ]
+      /* 设置控制条里面组件的相关属性及显示与否  */
+      'currentTimeDisplay': true,
+      'durationDisplay': true,
+      'remainingTimeDisplay': false,
+      'playbackRateMenuButton': true,
+      volumePanel: {
+        inline: false,
+      },
+      /* 使用children的形式可以控制每一个控件的位置，以及显示与否 */
+      children: ['playToggle',
+        'volumeMenuButton',
+        'currentTimeDisplay',
+        'progressControl',
+        'durationDisplay',
+        'customControlSpacer',
+        'playbackRateMenuButton',
+        'chaptersButton',
+        'subtitlesButton',
+        'captionsButton',
+        'fullscreenToggle']
     },
   });
   player.src(videoResources.value[currentVideoIndex.value].playUrl);
@@ -240,7 +244,6 @@ function bindCurrentVideo() {
     console.log("可以播放");
   });
 }
-
 
 //动态监听传入的info,代表请求视频的类型，内容
 watch(() => props.info,
@@ -264,18 +267,35 @@ function toggleLike(index) {
     //index=1时为点赞，为0时为收藏
     //切换点赞状态
     if (index) {
-      videoResources.value[currentVideoIndex.value].isLike = !videoResources.value[currentVideoIndex.value].isLike
-
-
+      // 当为取消关注时
+      if (videoResources.value[currentVideoIndex.value].like) {
+        cancelLikeVideo({
+              videoId: videoMessageNow.value.pkVideoId
+            })
+        videoMessageNow.value.likedCount--;
+      } else {
+      likeVideo({
+        videoId: videoMessageNow.value.pkVideoId
+      })
+        videoMessageNow.value.likedCount++;
+      }
+      videoResources.value[currentVideoIndex.value].like = !videoResources.value[currentVideoIndex.value].like
     }
     //切换收藏状态
     else {
-      videoResources.value[currentVideoIndex.value].isCollect = !videoResources.value[currentVideoIndex.value].isisCollect;
-      //像后端传输收藏信息
-
-
+      // 当为取消收藏时
+      if (videoResources.value[currentVideoIndex.value].collect) {
+        cancelLikeVideo({
+          videoId: videoMessageNow.value.pkVideoId
+        })
+        videoMessageNow.value.collectedCount--;
+      } else {
+        likeVideo({
+          videoId: videoMessageNow.value.pkVideoId
+        })
+      }
+      videoResources.value[currentVideoIndex.value].collect = !videoResources.value[currentVideoIndex.value].collect;
     }
-    //返回后端，更改后端数据  喜欢和收藏的值
   } else {
     ElMessage.error('您还未登录')
   }
@@ -306,7 +326,7 @@ function nextVideo() {
   if (currentVideoIndex.value > videoResources.value.length - 2) {
     //更换视频源 向后端重新请求
     console.log("这是最后一个视频了")
-    videoResources=getResources()
+    videoResources = getResources()
 
   } else {
     currentVideoIndex.value = currentVideoIndex.value + 1;
@@ -321,7 +341,7 @@ function updateVideo() {
     player.pause()
     videoMessageNow.value = videoResources.value[currentVideoIndex.value];
     player.src(videoMessageNow.value.playUrl);
-    cid.value =videoMessageNow.value.pkVideoId;//更新评论区
+    cid.value = videoMessageNow.value.pkVideoId;//更新评论区
     changeBackgroud()
     player.play()
   } else {
@@ -365,25 +385,26 @@ onBeforeUnmount(() => {
   flex: 1;
 }
 
-/*.video-list::before {*/
-/*  backdrop-filter: blur(8px);*/
-/*  background-color: rgba(255, 255, 255, 0.5);*/
-/*  z-index: 0;*/
-/*  content: "";*/
-/*  background-size: cover;*/
-/*  overflow: hidden;*/
-/*  position: absolute;*/
-/*  width: 100%;*/
-/*  height: 100%;*/
-/*  filter: blur(25px);*/
-/*  --bg-image: url('../assets/image/test.jpg');*/
-/*}*/
-
-
 .my-video {
   margin: auto;
   flex: 1;
   height: 100%;
+}
+
+:deep(.video-js .vjs-control-bar .vjs-live .vjs-time-control, .vjs-live .vjs-time-divider, .video-js .vjs-current-time, .video-js .vjs-duration) {
+  display: block;
+}
+
+:deep(.video-js .vjs-time-control) {
+  display: block;
+}
+
+:deep(.video-js .vjs-remaining-time) {
+  display: block;
+}
+
+:deep(.video-js .vjs-control-bar ) {
+  background-color: rgb(77 79 83 / 30%);
 }
 
 .buttons {

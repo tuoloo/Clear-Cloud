@@ -76,6 +76,7 @@ import image010 from "@/assets/image/education.svg"
 import image11 from "@/assets/image/game0.svg"
 import image011 from "@/assets/image/game.svg"
 import router from "@/router";
+import unlogin from "@/assets/image/unLogin.svg";
 
 //输入框内容
 let searchText = ref('')
@@ -120,6 +121,19 @@ function searchInput() {
   router.push({ path: '/handle/search', query: { 'searchText':searchText.value } })
 }
 
+// 去往我的主页
+function toMy(){
+  router.push({ path: '/handle/ownPage'})
+}
+
+//用户是否登录头像
+let userImage=ref(unlogin)
+onMounted(()=>{
+  //用户是否登录判断头像
+  if(localStorage.getItem('user')){
+    userImage.value=JSON.parse(localStorage.getItem('user')).avatar
+  }
+})
 </script>
 
 <style scoped>

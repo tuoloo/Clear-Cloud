@@ -144,7 +144,7 @@ function exitClick(){
 
 <style scoped>
 .container {
-  width: 95%;
+  width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -152,7 +152,6 @@ function exitClick(){
   margin-right: auto;
   border-top-left-radius: 30px;
   border-top-right-radius: 30px;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.6) 0%, #F5F5F5 30%);
   min-width: 700px;
 }
 
@@ -220,17 +219,6 @@ function exitClick(){
   flex: 3;
 }
 
-.scrollbar-demo-item {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 50px;
-  margin: 10px;
-  text-align: center;
-  border-radius: 4px;
-  background: var(--el-color-primary-light-9);
-  color: var(--el-color-primary);
-}
 :deep .el-scrollbar .el-scrollbar__wrap {
   /*将横向滚动条隐藏*/
   overflow-x: hidden;

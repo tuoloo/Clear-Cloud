@@ -110,7 +110,7 @@ function exitClick(){
 
 <style scoped>
 .container {
-  width: 95%;
+  width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -118,7 +118,6 @@ function exitClick(){
   margin-right: auto;
   border-top-left-radius: 30px;
   border-top-right-radius: 30px;
-  background-color:white;
   min-width: 700px;
 }
 

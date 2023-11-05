@@ -249,7 +249,8 @@ onMounted(() => {
       userImage.value=JSON.parse(localStorage.getItem('user')).avatar
        loginButton.value=false;
     }
-});
+}
+);
 //去往搜索页面
 function searchInput() {
   router.push({ path: '/handle/search', query: { 'searchText':searchText.value } })
@@ -476,15 +477,7 @@ margin-right: 10px; /* 添加一些右边距以分隔图标和文本 */
 .user-image{
   margin-right: 10px;
 }
-/*.login-css{*/
-/*  cursor: pointer;*/
-/*  background-color: #d9578bb0;*/
-/*  border: none;*/
-/*  font-size: 15px;*/
-/*  color: #2b333f;*/
-/*  border-radius: 15px;*/
-/*  width: 60px;*/
-/*}*/
+
 .login-css{
   background: rgba(217, 87, 139, 0.99);
   background-image: linear-gradient(to bottom, rgba(217, 87, 139, 0.88), rgba(35, 196, 224, 0.82));
@@ -515,7 +508,7 @@ margin-right: 10px; /* 添加一些右边距以分隔图标和文本 */
 .play-video {
   position: absolute;
   width: 98%;
-  height: 95%;
+  height: 99%;
   border-radius: 20px;
   border: #8A8B90 solid 0.2px;
   margin-left: 15px;

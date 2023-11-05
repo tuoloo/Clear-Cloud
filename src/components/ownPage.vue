@@ -183,7 +183,6 @@
           <div class="buttons" >
             <button v-show="item.state === 0" @click="follow(index)" style="background-color: #D9578B">关注</button>
             <button v-show="item.state === 1" @click="unfollow(index)" style="background-color:rgb(161 164 175);">已关注</button>
-            <button v-show="item.state === 2" @click="unfollow(index)" style="background-color:rgb(161 164 175);">相互关注</button>
           </div>
         </div>
       </el-scrollbar>
@@ -203,7 +202,6 @@
           <div class="buttons" >
             <button v-show="item.state === 0" @click="follow1(index)" style="background-color: #D9578B">关注</button>
             <button v-show="item.state === 1" @click="unfollow1(index)" style="background-color:rgb(161 164 175);">已关注</button>
-            <button v-show="item.state === 2" @click="unfollow1(index)" style="background-color:rgb(161 164 175);">相互关注</button>
           </div>
         </div>
       </el-scrollbar>
@@ -236,7 +234,7 @@
           <el-input v-model="userMessagesCopy.signature"/>
         </el-form-item>
         <el-form-item>
-          <el-button color="#DF3636" :dark="isDark" @click="saveUserInfo">保存</el-button>
+          <el-button type="primary" @click="saveUserInfo">保存</el-button>
           <el-button color="#98a7b7" :dark="isDark" plain @click="cancelEdit">取消</el-button>
         </el-form-item>
       </el-form>
@@ -252,7 +250,7 @@ import {ElMessage, TabsPaneContext} from 'element-plus'
 import router from "@/router";
 import PlayerVideo from "@/components/PlayerVideo";
 import exit from "@/assets/image/exit.svg"
-import {getUserInformation,updateSelfInfo,uploadAvatar} from '@/api/userHandle'
+import {getUserInformation,updateSelfInfo,publishWork,unfollow,follow,getFansList,getFollowList} from '@/api/userHandle'
 
 let token = JSON.parse(localStorage.getItem('user')).access_token;
 console.log(token)
@@ -268,29 +266,25 @@ let attentionList = ref('')
 let fanList = ref('')
 //初始化   视频列表要是ref数据
 onMounted(() => {
-  //像后端发送请求个人信息  关注列表，粉丝列表 作品列表
-  // getUserInformation().then(res=>{
-  //   if(res.code==1){
-  //   userMessages.value=res.data;
-  // }else {
-  //     ElMessage({
-  //       message: res.message,
-  //       type: 'warning',
-  //     })
-  //   }
-  // })
-  userMessages.value = {
-    pkUserId: 52,
-    userEmail: "3157904941@qq.com",
-    nickName: "清云-user",
-    avatar: "http://s32vad0na.bkt.clouddn.com/default_avatar.jpeg",
-    signature: null,
-    followCount: 0,
-    fanCount: 0,
-    likedCount: 0,
-    collectCount: 0,
-    workCount: 0
-  }
+  //像后端发送请求个人信息  作品列表
+  getUserInformation().then(res=>{
+    if(res.code==1){
+    userMessages.value=res.data;
+  }else {
+      ElMessage({
+        message: res.message,
+        type: 'warning',
+      })
+    }
+  })
+  //关注列表
+  getFollowList().then(res=>{
+    attentionList.value=res.data
+  })
+  //粉丝列表
+  getFansList().then(res=>{
+    fanList.value=res.data
+  })
   attentionList.value = [{
     userId: 101,
     userImage: image1,
@@ -340,8 +334,6 @@ function fixMessage() {
 }
 // 头像上传成功处理
 const handleAvatarSuccess = (response, uploadFile) => {
-  //更改头像地址
-  console.log(response)
   userMessages.value.avatar=response.data;
 }
 
@@ -386,7 +378,10 @@ function viewAttention() {
 //关注逻辑
 //关注
 function follow(index) {
-  //关注了别人 向后端询问是1还是2
+  //关注了别人
+  follow({
+    targetUserId:attentionList.value[index]
+  })
   attentionList.value[index].state=1;
   console.log("关注")
 }
@@ -518,8 +513,15 @@ function cancleUpload(){
 
 //确认上传
 function uploadVideo(){
+  //上传
+  publishWork({
+    userId:userMessages.value.pkUserId,
+    type:value.value,
+    videoDescription:titleContent.value,
+    videoCover:imageUrl.value,
+    playUrl:videoURL.value
+  })
   //更新视频源头
-  //上传成功信息
 
 }
 
@@ -536,7 +538,7 @@ function handleConfirm(id){
 
 <style scoped>
 .container {
-  width: 95%;
+  width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -544,7 +546,6 @@ function handleConfirm(id){
   margin-right: auto;
   border-top-left-radius: 30px;
   border-top-right-radius: 30px;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.6) 0%, #F5F5F5 30%);
   min-width: 700px;
 }
 
