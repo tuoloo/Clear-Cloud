@@ -33,8 +33,8 @@
 
         <div class="button-var">
           <img
-              @click="toggleLike(1)"
-              :src="videoMessageNow.like ? like : like0"
+              @click="toggleLike(true)"
+              :src="videoMessageNow.authorVO.like ? like : like0"
               alt="Like Button"
           />
           {{ videoMessageNow.likedCount }}
@@ -50,11 +50,11 @@
         </div>
         <div class="button-var">
           <img
-              @click="toggleLike(0)"
-              :src="videoMessageNow.collect ? enshrine : enshrine0"
+              @click="toggleLike(false)"
+              :src="videoMessageNow.authorVO.collect?enshrine:enshrine0"
               alt="enshrine Button"
           />
-          {{ videoMessageNow.enshrinenums }}
+          {{ videoMessageNow.collectedCount }}
         </div>
         <div class="button-var">
           <img
@@ -86,7 +86,7 @@
     </div>
     <!--    评论区-->
     <div class="commentArea" v-if=ifShow>
-      <comment :info="cid" v-model:count=videoMessage ></comment>
+      <comment :info="cid" :incrementCommentedCount="incrementCommentedCount"  ></comment>
     </div>
   </div>
 </template>
@@ -104,17 +104,23 @@ import share from '@/assets/image/share.svg'
 import up from '@/assets/image/up.svg'
 import down from '@/assets/image/down.svg'
 import Loading from "@/components/loading";
-import testImage from '@/assets/image/test2.jpg'
-import comment from '@/components/comment'
 import Comment from "@/components/comment";
 import {ElMessage} from "element-plus";
-import {videoLoad, likeVideo, cancelLikeVideo, collectVideo, cancelCollectVideo} from "@/api/videoHandle";
+import {
+  videoLoad,
+  likeVideo,
+  cancelLikeVideo,
+  collectVideo,
+  cancelCollectVideo,
+  getLikeVideos, getCollectVideos, searchVideo
+} from "@/api/videoHandle";
+import {getUserInformation} from "@/api/userHandle";
 
 let player = null;//绑定当前videojs
 const props = defineProps({
-  info: String,
-  tip: String,
-  serial: Number,
+  info: String,//类别，推荐，热门，搜索（做单独判断），作品（做单独判断），喜欢，收藏
+  tip: String,//用于传输用户的id,方便获取作品
+  serial: Number,//观看视频时的序号
 });
 
 const currentVideoIndex = ref(0); // 当前播放视频的索引
@@ -123,7 +129,7 @@ const isDataLoaded = ref(false);
 let videoMessageNow = ref();//当前视频
 let videoResources = ref([]);//视频源集合
 let cid = ref('')//评论区绑定
-
+let num = ref('')
 // 初始化，获取视频源
 onMounted(async () => {
       console.log("初始化了一次")
@@ -131,13 +137,11 @@ onMounted(async () => {
         player.dispose()
       // 从API获取视频源的函数，用实际方法代替   初始值是推荐
       videoResources.value = await getResources();
-      console.log(props.info)
-      console.log(currentVideoIndex.value)
-      console.log(videoResources.value)
       videoMessageNow.value = videoResources.value[currentVideoIndex.value];//更新当前视频
       isDataLoaded.value = true; // 数据加载完成，可以渲染视频组件
       //评论区是否更新需要检测
-      cid.value = videoResources.value[currentVideoIndex.value].pkVideoId;//更新评论区
+      // cid.value = videoResources.value[currentVideoIndex.value].pkVideoId;//更新评论区
+      num.value=videoMessageNow.value.commentedCount
       changeBackgroud();//更换背景
       //绑定当前视频
       setTimeout(() => {
@@ -148,24 +152,52 @@ onMounted(async () => {
 
 //取得数据
 async function getResources() {
-  console.log("内容:" + props.info + "标签:" + props.tip + "序号：" + props.serial);
-  if (props.serial) {
+  if(props.info=="作品"){
     currentVideoIndex.value = props.serial;
-  } else {
-    currentVideoIndex.value = 0;
-  }
-  if (props.tip) {
-    console.log(props.target);
-  }
-  try {
-    const res = await videoLoad({}); // 使用 await 等待 videoLoad({}) 的结果
+    //像后端发送请求个人信息  作品列表
+    const res = await getUserInformation({
+      userId:props.tip
+    }); // 使用 await 等待 videoLoad({}) 的结果
+    return res.data.videoInfoList; // 返回获取的数据
+  }else if(props.info=="喜欢"){
+    currentVideoIndex.value = props.serial;
+    const res = await getLikeVideos({
+      userId: JSON.parse(localStorage.getItem('user')).pkUserId
+    }); // 使用 await 等待 videoLoad({}) 的结果
     return res.data; // 返回获取的数据
-  } catch (error) {
-    console.error('Failed to fetch video source:', error);
-    return null; // 返回空值或者其他适当的错误处理
+
+  }else if(props.info=="收藏"){
+    currentVideoIndex.value = props.serial;
+    const res = await getCollectVideos({
+      userId: JSON.parse(localStorage.getItem('user')).pkUserId
+    }); // 使用 await 等待 videoLoad({}) 的结果
+    return res.data; // 返回获取的数据
+  }
+  else if(props.info=="搜索"){
+    currentVideoIndex.value = props.serial;
+    const res = await  searchVideo({
+      searchQuery:props.tip
+    })
+    return res.data;
+  }else {
+    currentVideoIndex.value = 0;
+    try {
+      const res = await videoLoad({
+        type:props.info
+      }); // 使用 await 等待 videoLoad({}) 的结果
+      return res.data; // 返回获取的数据
+    }catch (error){
+      console.error("不能加载视频",error)
+      return null
+    }
+
   }
 }
 
+// 创建方法，用于增加 commentedCount
+const incrementCommentedCount = () => {
+  videoMessageNow.value.commentedCount++;
+};
 
 //更改背景的url
 function changeBackgroud() {
@@ -246,16 +278,27 @@ function bindCurrentVideo() {
 }
 
 //动态监听传入的info,代表请求视频的类型，内容
-watch(() => props.info,
-    (newValue, oldValue) => {
+watch( () => props.info,
+    async (newValue, oldValue) => {
       isDataLoaded.value = false;//加载界面
-      videoResources = getResources()//获取视频资源
+      if(player)
+      player.dispose()
+      const loadedResources = await getResources()//获取视频资源
       // 更新视频源
-      isDataLoaded.value = true //关闭加载界面
-      //
-      player.src(videoResources.value[currentVideoIndex.value].videoSrc);
-      changeBackgroud()
-      player.load()
+      if (loadedResources) {
+        videoResources.value = loadedResources
+        // 监听视频加载完成事件
+        videoMessageNow.value = videoResources.value[currentVideoIndex.value];//更新当前视频
+        isDataLoaded.value = true; // 数据加载完成，可以渲染视频组件
+        //评论区是否更新需要检测
+        // cid.value = videoResources.value[currentVideoIndex.value].pkVideoId;//更新评论区
+        num.value=videoMessageNow.value.commentedCount
+        changeBackgroud();//更换背景
+        //绑定当前视频
+        setTimeout(() => {
+          bindCurrentVideo()
+        }, 10)
+      }
     }
 );
 
@@ -267,8 +310,9 @@ function toggleLike(index) {
     //index=1时为点赞，为0时为收藏
     //切换点赞状态
     if (index) {
-      // 当为取消关注时
-      if (videoResources.value[currentVideoIndex.value].like) {
+      // 当为取消点赞时
+      if (videoMessageNow.value.authorVO.like) {
+        console.log("正在取消点赞")
         cancelLikeVideo({
               videoId: videoMessageNow.value.pkVideoId
             })
@@ -279,22 +323,26 @@ function toggleLike(index) {
       })
         videoMessageNow.value.likedCount++;
       }
-      videoResources.value[currentVideoIndex.value].like = !videoResources.value[currentVideoIndex.value].like
+      videoMessageNow.value.authorVO.like===!videoMessageNow.value.authorVO.like;
+      console.log(videoMessageNow.value.authorVO.like)
+      videoResources.value[currentVideoIndex.value].authorVO.like = !videoResources.value[currentVideoIndex.value].authorVO.like
     }
     //切换收藏状态
     else {
       // 当为取消收藏时
-      if (videoResources.value[currentVideoIndex.value].collect) {
+      if (videoMessageNow.value.authorVO.collect) {
         cancelLikeVideo({
           videoId: videoMessageNow.value.pkVideoId
         })
         videoMessageNow.value.collectedCount--;
       } else {
-        likeVideo({
+        collectVideo({
           videoId: videoMessageNow.value.pkVideoId
         })
+        videoMessageNow.value.collectedCount++;
       }
-      videoResources.value[currentVideoIndex.value].collect = !videoResources.value[currentVideoIndex.value].collect;
+      videoMessageNow.value.authorVO.collect===!videoMessageNow.value.authorVO.collect;
+      videoResources.value[currentVideoIndex.value].authorVO.collect = !videoResources.value[currentVideoIndex.value].authorVO.collect;
     }
   } else {
     ElMessage.error('您还未登录')
@@ -327,7 +375,6 @@ function nextVideo() {
     //更换视频源 向后端重新请求
     console.log("这是最后一个视频了")
     videoResources = getResources()
-
   } else {
     currentVideoIndex.value = currentVideoIndex.value + 1;
     //重新绑定视频源头
@@ -438,7 +485,7 @@ onBeforeUnmount(() => {
 }
 
 .commentArea {
-  background-color: paleturquoise;
+  /*background-color: paleturquoise;*/
   width: 350px;
   height: 100%;
 }
@@ -498,7 +545,7 @@ div .video-js .button.vjs-big-play-button {
 }
 
 /* 中间的播放箭头 */
-.vjs-big-play-button .vjs-icon-placeholder {
+:deep .vjs-big-play-button .vjs-icon-placeholder {
   font-size: 1.63em;
 }
 
@@ -511,5 +558,24 @@ div .video-js .button.vjs-big-play-button {
   margin-top: -1em;
   margin-left: -1.5em;
 }
+.vjs-paused .vjs-big-play-button,
+.vjs-paused.vjs-has-started .vjs-big-play-button {
+  display: block;
+}
+.video-js .vjs-big-play-button{
+  font-size: 2.5em;
+  line-height: 2.3em;
+  height: 2.5em;
+  width: 2.5em;
+  -webkit-border-radius: 2.5em;
+  -moz-border-radius: 2.5em;
+  border-radius: 2.5em;
+  background-color: #73859f;
+  background-color: rgba(115,133,159,.5);
+  border-width: 0.15em;
+  margin-top: -1.25em;
+  margin-left: -1.75em;
+}
+
 
 </style>

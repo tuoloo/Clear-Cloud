@@ -29,14 +29,26 @@ export const cancelCollectVideo=(params)=>{
     return http.get('/video/cancelCollectVideo',params)
 }
 
-//获取关注列表
-export const getFollowList=(params)=>{
-    //params是一个对象
-    return http.get('/user/getFollowList',params)
-}
-//获取粉丝列表
 
-export const getFansList=(params)=>{
+//删除视频
+export const deleteVideo=(params)=>{
     //params是一个对象
-    return http.get('/user/getFansList',params)
+    return http.delete('/video/deleteVideo',params)
+}
+
+//获取用户喜欢的视频
+export const getLikeVideos=(params)=>{
+    //params是一个对象
+    return http.get('/user/getLikeVideos',params)
+}
+//获取用户收藏的视频
+export const getCollectVideos=(params)=>{
+    //params是一个对象
+    return http.get('/user/getCollectVideos',params)
+}
+
+//搜索视频
+export const searchVideo=(params)=>{
+    //params是一个对象
+    return http.get('/video/searchVideo',params)
 }

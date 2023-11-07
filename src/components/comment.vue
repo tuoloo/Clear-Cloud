@@ -3,11 +3,11 @@
     <div class="top">
       <div v-if="isLogin" class="father-input">
         <!--        <img :src="userMessage.avatar" class="user-image">-->
-        <img src="../assets/image/test.jpg" class="user-image">
-        <el-input v-model="myComment" placeholder="请输入评论...."></el-input>
+        <img :src=userMessage.avatar class="user-image">
+        <el-input v-model="myComment1" placeholder="请输入评论...."></el-input>
         <el-button type="primary" plain @click="sendComment(-1)">发送</el-button>
       </div>
-      <div v-else class="login-tips">请先登录
+      <div v-else class="login-tips">请进行登录后评论
       </div>
     </div>
     <div class="mainContainer">
@@ -21,11 +21,12 @@
           </div>
           <div style="flex: 1;"></div>
           <div class="icon-css" @click="commentClick(index,item.commentID)">
-            <img src="../assets/image/coment.svg">
+            <img src="../assets/image/coment0.svg">
             {{item.commentNum}}
           </div>
-          <div class="icon-css" @click="likeClick(item.commentID)">
-            <img src="../assets/image/like0.svg">
+          <div class="icon-css" @click="likeClick(index)">
+            <img v-show="item.isLike" src="../assets/image/like00.svg">
+            <img v-show="!item.isLike" src="../assets/image/like000.svg">
             {{item.like}}
           </div>
         </div>
@@ -44,11 +45,12 @@
             </div>
             <div style="flex: 1;"></div>
             <div class="icon-css" @click="commentClick(index,item0.commentID)">
-              <img src="../assets/image/coment.svg">
+              <img src="../assets/image/coment0.svg">
               {{item0.commentNum}}
             </div>
             <div class="icon-css" @click="likeClick(item0.commentID)">
-              <img src="../assets/image/like0.svg">
+              <img v-show="item.isLike" src="../assets/image/like00.svg">
+              <img v-show="!item.isLike" src="../assets/image/like000.svg">
               {{item0.like}}
             </div>
           </div>
@@ -60,8 +62,8 @@
         <el-divider content-position="left" v-if="item.isVisible" @click="closeChild(index)">收起评论</el-divider>
         <div class="top" v-if="item.isComment">
           <div class="father-input">
-            <img src="../assets/image/test.jpg" class="user-image">
-            <el-input v-model="myComment" placeholder="请输入评论...."></el-input>
+            <img :src=userMessage.avatar class="user-image">
+            <el-input v-model="myComment2" placeholder="请输入评论...."></el-input>
             <el-button type="primary" plain @click="sendComment(index)">发送</el-button>
           </div>
         </div>
@@ -78,7 +80,8 @@ import router from "@/router";
 
 const comments = ref('')
 const userMessage = ref('')//我的个人信息
-let myComment = ref('');//我的评论
+let myComment1 = ref('');//我的评论
+let myComment2 = ref('');//我的评论
 //当前回复ID
 let commentSerial=ref(0)
 //当前展示的评论块
@@ -86,17 +89,23 @@ let CommentIndex=ref(0)
 
 let isLogin = ref(false)
 
+// const props = defineProps({
+//   info: String,
+// });
+// 接收 incrementCommentedCount 属性
 const props = defineProps({
-  info: String,
-});
+  incrementCommentedCount: Function,
+})
+
+
 onMounted(() => {
   //评论代码初始化
     getResouce();
   //查看是否登录
   if (localStorage.getItem('user')) {
-    userMessage.value = localStorage.getItem('user');
     isLogin.value = true;
   }
+  userMessage.value = JSON.parse(localStorage.getItem('user'));
   bindChild()
   console.log(comments)
 })
@@ -112,7 +121,7 @@ function getResouce(){
       nickName: '小明',
       pkUserId: 1001,
       avatar: 'https://ae01.alicdn.com/kf/Hd60a3f7c06fd47ae85624badd32ce54dv.jpg',
-      comment: '我发布一张新专辑Norman Fucking Rockwell,大家快来听啊',
+      comment: '我喜欢你的视频',
       time: '2019年9月16日 18:43',
       commentNum: 2,
       like: 15,
@@ -125,7 +134,7 @@ function getResouce(){
           avatar: 'https://ae01.alicdn.com/kf/H94c78935ffa64e7e977544d19ecebf06L.jpg',
           toName: '小明',//回复人姓名
           toCommentID: 10001,//回复人ID
-          comment: '我很喜欢你的新专辑！！',
+          comment: '我很喜欢你的视频！！',
           time: '2019年9月16日 18:43',
           commentNum: 1,
           like: 15,
@@ -151,7 +160,7 @@ function getResouce(){
       nickName: '小牛',
       pkUserId: 1006,
       avatar: 'https://ae01.alicdn.com/kf/H94c78935ffa64e7e977544d19ecebf06L.jpg',
-      comment: '我发行了我的新专辑Lover',
+      comment: '家人们点点关注',
       time: '2019年9月16日 18:43',
       commentNum: 1,
       like: 5,
@@ -164,7 +173,7 @@ function getResouce(){
           avatar: 'https://ae01.alicdn.com/kf/H94c78935ffa64e7e977544d19ecebf06L.jpg',
           toName: '小牛',//回复人姓名
           toCommentID: 10008,//回复人ID
-          comment: '我发行了我的新专辑Lover',
+          comment: '为爱发电家人们',
           time: '2019年9月16日 18:43',
           commentNum: 0,
           like: 5,
@@ -177,13 +186,402 @@ function getResouce(){
       nickName: '小咯',
       pkUserId: 1006,
       avatar: 'https://ae01.alicdn.com/kf/H94c78935ffa64e7e977544d19ecebf06L.jpg',
-      comment: '我发行了我的新专辑Lover',
+      comment: '这么晚还没睡呀？',
       time: '2019年9月16日 18:43',
       commentNum: 0,
       like: 5,
       isLike: false,//我是否喜欢了
       reply: []
     },
+    {
+      commentID: 10001,
+      nickName: '小明',
+      pkUserId: 1001,
+      avatar: 'https://ae01.alicdn.com/kf/Hd60a3f7c06fd47ae85624badd32ce54dv.jpg',
+      comment: '我喜欢你的视频',
+      time: '2019年9月16日 18:43',
+      commentNum: 2,
+      like: 15,
+      isLike: false,//我是否喜欢了
+      reply: [
+        {
+          commentID: 10002,
+          nickName: '小红',
+          pkUserId: 1002,
+          avatar: 'https://ae01.alicdn.com/kf/H94c78935ffa64e7e977544d19ecebf06L.jpg',
+          toName: '小明',//回复人姓名
+          toCommentID: 10001,//回复人ID
+          comment: '我很喜欢你的视频！！',
+          time: '2019年9月16日 18:43',
+          commentNum: 1,
+          like: 15,
+          isLike: false,//我是否喜欢了
+        },
+        {
+          commentID: 10003,
+          nickName: '小水',
+          pkUserId: 1003,
+          avatar: 'https://ae01.alicdn.com/kf/H94c78935ffa64e7e977544d19ecebf06L.jpg',
+          toName: '小红',//回复人姓名
+          toCommentID: 10002,//回复人ID
+          comment: '我也是！！',
+          time: '2019年9月16日 18:43',
+          commentNum: 0,
+          like: 15,
+          isLike: false,//我是否喜欢了
+        },
+      ]
+    },
+    {
+      commentID: 10001,
+      nickName: '小明',
+      pkUserId: 1001,
+      avatar: 'https://ae01.alicdn.com/kf/Hd60a3f7c06fd47ae85624badd32ce54dv.jpg',
+      comment: '我喜欢你的视频',
+      time: '2019年9月16日 18:43',
+      commentNum: 2,
+      like: 15,
+      isLike: false,//我是否喜欢了
+      reply: [
+        {
+          commentID: 10002,
+          nickName: '小红',
+          pkUserId: 1002,
+          avatar: 'https://ae01.alicdn.com/kf/H94c78935ffa64e7e977544d19ecebf06L.jpg',
+          toName: '小明',//回复人姓名
+          toCommentID: 10001,//回复人ID
+          comment: '我很喜欢你的视频！！',
+          time: '2019年9月16日 18:43',
+          commentNum: 1,
+          like: 15,
+          isLike: false,//我是否喜欢了
+        },
+        {
+          commentID: 10003,
+          nickName: '小水',
+          pkUserId: 1003,
+          avatar: 'https://ae01.alicdn.com/kf/H94c78935ffa64e7e977544d19ecebf06L.jpg',
+          toName: '小红',//回复人姓名
+          toCommentID: 10002,//回复人ID
+          comment: '我也是！！',
+          time: '2019年9月16日 18:43',
+          commentNum: 0,
+          like: 15,
+          isLike: false,//我是否喜欢了
+        },
+      ]
+    },
+    {
+      commentID: 10001,
+      nickName: '小明',
+      pkUserId: 1001,
+      avatar: 'https://ae01.alicdn.com/kf/Hd60a3f7c06fd47ae85624badd32ce54dv.jpg',
+      comment: '我喜欢你的视频',
+      time: '2019年9月16日 18:43',
+      commentNum: 2,
+      like: 15,
+      isLike: false,//我是否喜欢了
+      reply: [
+        {
+          commentID: 10002,
+          nickName: '小红',
+          pkUserId: 1002,
+          avatar: 'https://ae01.alicdn.com/kf/H94c78935ffa64e7e977544d19ecebf06L.jpg',
+          toName: '小明',//回复人姓名
+          toCommentID: 10001,//回复人ID
+          comment: '我很喜欢你的视频！！',
+          time: '2019年9月16日 18:43',
+          commentNum: 1,
+          like: 15,
+          isLike: false,//我是否喜欢了
+        },
+        {
+          commentID: 10003,
+          nickName: '小水',
+          pkUserId: 1003,
+          avatar: 'https://ae01.alicdn.com/kf/H94c78935ffa64e7e977544d19ecebf06L.jpg',
+          toName: '小红',//回复人姓名
+          toCommentID: 10002,//回复人ID
+          comment: '我也是！！',
+          time: '2019年9月16日 18:43',
+          commentNum: 0,
+          like: 15,
+          isLike: false,//我是否喜欢了
+        },
+      ]
+    },
+    {
+      commentID: 10001,
+      nickName: '小明',
+      pkUserId: 1001,
+      avatar: 'https://ae01.alicdn.com/kf/Hd60a3f7c06fd47ae85624badd32ce54dv.jpg',
+      comment: '我喜欢你的视频',
+      time: '2019年9月16日 18:43',
+      commentNum: 2,
+      like: 15,
+      isLike: false,//我是否喜欢了
+      reply: [
+        {
+          commentID: 10002,
+          nickName: '小红',
+          pkUserId: 1002,
+          avatar: 'https://ae01.alicdn.com/kf/H94c78935ffa64e7e977544d19ecebf06L.jpg',
+          toName: '小明',//回复人姓名
+          toCommentID: 10001,//回复人ID
+          comment: '我很喜欢你的视频！！',
+          time: '2019年9月16日 18:43',
+          commentNum: 1,
+          like: 15,
+          isLike: false,//我是否喜欢了
+        },
+        {
+          commentID: 10003,
+          nickName: '小水',
+          pkUserId: 1003,
+          avatar: 'https://ae01.alicdn.com/kf/H94c78935ffa64e7e977544d19ecebf06L.jpg',
+          toName: '小红',//回复人姓名
+          toCommentID: 10002,//回复人ID
+          comment: '我也是！！',
+          time: '2019年9月16日 18:43',
+          commentNum: 0,
+          like: 15,
+          isLike: false,//我是否喜欢了
+        },
+      ]
+    },
+    {
+      commentID: 10001,
+      nickName: '小明',
+      pkUserId: 1001,
+      avatar: 'https://ae01.alicdn.com/kf/Hd60a3f7c06fd47ae85624badd32ce54dv.jpg',
+      comment: '我喜欢你的视频',
+      time: '2019年9月16日 18:43',
+      commentNum: 2,
+      like: 15,
+      isLike: false,//我是否喜欢了
+      reply: [
+        {
+          commentID: 10002,
+          nickName: '小红',
+          pkUserId: 1002,
+          avatar: 'https://ae01.alicdn.com/kf/H94c78935ffa64e7e977544d19ecebf06L.jpg',
+          toName: '小明',//回复人姓名
+          toCommentID: 10001,//回复人ID
+          comment: '我很喜欢你的视频！！',
+          time: '2019年9月16日 18:43',
+          commentNum: 1,
+          like: 15,
+          isLike: false,//我是否喜欢了
+        },
+        {
+          commentID: 10003,
+          nickName: '小水',
+          pkUserId: 1003,
+          avatar: 'https://ae01.alicdn.com/kf/H94c78935ffa64e7e977544d19ecebf06L.jpg',
+          toName: '小红',//回复人姓名
+          toCommentID: 10002,//回复人ID
+          comment: '我也是！！',
+          time: '2019年9月16日 18:43',
+          commentNum: 0,
+          like: 15,
+          isLike: false,//我是否喜欢了
+        },
+      ]
+    },
+    {
+      commentID: 10001,
+      nickName: '小明',
+      pkUserId: 1001,
+      avatar: 'https://ae01.alicdn.com/kf/Hd60a3f7c06fd47ae85624badd32ce54dv.jpg',
+      comment: '我喜欢你的视频',
+      time: '2019年9月16日 18:43',
+      commentNum: 2,
+      like: 15,
+      isLike: false,//我是否喜欢了
+      reply: [
+        {
+          commentID: 10002,
+          nickName: '小红',
+          pkUserId: 1002,
+          avatar: 'https://ae01.alicdn.com/kf/H94c78935ffa64e7e977544d19ecebf06L.jpg',
+          toName: '小明',//回复人姓名
+          toCommentID: 10001,//回复人ID
+          comment: '我很喜欢你的视频！！',
+          time: '2019年9月16日 18:43',
+          commentNum: 1,
+          like: 15,
+          isLike: false,//我是否喜欢了
+        },
+        {
+          commentID: 10003,
+          nickName: '小水',
+          pkUserId: 1003,
+          avatar: 'https://ae01.alicdn.com/kf/H94c78935ffa64e7e977544d19ecebf06L.jpg',
+          toName: '小红',//回复人姓名
+          toCommentID: 10002,//回复人ID
+          comment: '我也是！！',
+          time: '2019年9月16日 18:43',
+          commentNum: 0,
+          like: 15,
+          isLike: false,//我是否喜欢了
+        },
+      ]
+    },
+    {
+      commentID: 10001,
+      nickName: '小明',
+      pkUserId: 1001,
+      avatar: 'https://ae01.alicdn.com/kf/Hd60a3f7c06fd47ae85624badd32ce54dv.jpg',
+      comment: '我喜欢你的视频',
+      time: '2019年9月16日 18:43',
+      commentNum: 2,
+      like: 15,
+      isLike: false,//我是否喜欢了
+      reply: [
+        {
+          commentID: 10002,
+          nickName: '小红',
+          pkUserId: 1002,
+          avatar: 'https://ae01.alicdn.com/kf/H94c78935ffa64e7e977544d19ecebf06L.jpg',
+          toName: '小明',//回复人姓名
+          toCommentID: 10001,//回复人ID
+          comment: '我很喜欢你的视频！！',
+          time: '2019年9月16日 18:43',
+          commentNum: 1,
+          like: 15,
+          isLike: false,//我是否喜欢了
+        },
+        {
+          commentID: 10003,
+          nickName: '小水',
+          pkUserId: 1003,
+          avatar: 'https://ae01.alicdn.com/kf/H94c78935ffa64e7e977544d19ecebf06L.jpg',
+          toName: '小红',//回复人姓名
+          toCommentID: 10002,//回复人ID
+          comment: '我也是！！',
+          time: '2019年9月16日 18:43',
+          commentNum: 0,
+          like: 15,
+          isLike: false,//我是否喜欢了
+        },
+      ]
+    },
+    {
+      commentID: 10001,
+      nickName: '小明',
+      pkUserId: 1001,
+      avatar: 'https://ae01.alicdn.com/kf/Hd60a3f7c06fd47ae85624badd32ce54dv.jpg',
+      comment: '我喜欢你的视频',
+      time: '2019年9月16日 18:43',
+      commentNum: 2,
+      like: 15,
+      isLike: false,//我是否喜欢了
+      reply: [
+        {
+          commentID: 10002,
+          nickName: '小红',
+          pkUserId: 1002,
+          avatar: 'https://ae01.alicdn.com/kf/H94c78935ffa64e7e977544d19ecebf06L.jpg',
+          toName: '小明',//回复人姓名
+          toCommentID: 10001,//回复人ID
+          comment: '我很喜欢你的视频！！',
+          time: '2019年9月16日 18:43',
+          commentNum: 1,
+          like: 15,
+          isLike: false,//我是否喜欢了
+        },
+        {
+          commentID: 10003,
+          nickName: '小水',
+          pkUserId: 1003,
+          avatar: 'https://ae01.alicdn.com/kf/H94c78935ffa64e7e977544d19ecebf06L.jpg',
+          toName: '小红',//回复人姓名
+          toCommentID: 10002,//回复人ID
+          comment: '我也是！！',
+          time: '2019年9月16日 18:43',
+          commentNum: 0,
+          like: 15,
+          isLike: false,//我是否喜欢了
+        },
+      ]
+    },    {
+      commentID: 10001,
+      nickName: '小明',
+      pkUserId: 1001,
+      avatar: 'https://ae01.alicdn.com/kf/Hd60a3f7c06fd47ae85624badd32ce54dv.jpg',
+      comment: '我喜欢你的视频',
+      time: '2019年9月16日 18:43',
+      commentNum: 2,
+      like: 15,
+      isLike: false,//我是否喜欢了
+      reply: [
+        {
+          commentID: 10002,
+          nickName: '小红',
+          pkUserId: 1002,
+          avatar: 'https://ae01.alicdn.com/kf/H94c78935ffa64e7e977544d19ecebf06L.jpg',
+          toName: '小明',//回复人姓名
+          toCommentID: 10001,//回复人ID
+          comment: '我很喜欢你的视频！！',
+          time: '2019年9月16日 18:43',
+          commentNum: 1,
+          like: 15,
+          isLike: false,//我是否喜欢了
+        },
+        {
+          commentID: 10003,
+          nickName: '小水',
+          pkUserId: 1003,
+          avatar: 'https://ae01.alicdn.com/kf/H94c78935ffa64e7e977544d19ecebf06L.jpg',
+          toName: '小红',//回复人姓名
+          toCommentID: 10002,//回复人ID
+          comment: '我也是！！',
+          time: '2019年9月16日 18:43',
+          commentNum: 0,
+          like: 15,
+          isLike: false,//我是否喜欢了
+        },
+      ]
+    },    {
+      commentID: 10001,
+      nickName: '小明',
+      pkUserId: 1001,
+      avatar: 'https://ae01.alicdn.com/kf/Hd60a3f7c06fd47ae85624badd32ce54dv.jpg',
+      comment: '我喜欢你的视频',
+      time: '2019年9月16日 18:43',
+      commentNum: 2,
+      like: 15,
+      isLike: false,//我是否喜欢了
+      reply: [
+        {
+          commentID: 10002,
+          nickName: '小红',
+          pkUserId: 1002,
+          avatar: 'https://ae01.alicdn.com/kf/H94c78935ffa64e7e977544d19ecebf06L.jpg',
+          toName: '小明',//回复人姓名
+          toCommentID: 10001,//回复人ID
+          comment: '我很喜欢你的视频！！',
+          time: '2019年9月16日 18:43',
+          commentNum: 1,
+          like: 15,
+          isLike: false,//我是否喜欢了
+        },
+        {
+          commentID: 10003,
+          nickName: '小水',
+          pkUserId: 1003,
+          avatar: 'https://ae01.alicdn.com/kf/H94c78935ffa64e7e977544d19ecebf06L.jpg',
+          toName: '小红',//回复人姓名
+          toCommentID: 10002,//回复人ID
+          comment: '我也是！！',
+          time: '2019年9月16日 18:43',
+          commentNum: 0,
+          like: 15,
+          isLike: false,//我是否喜欢了
+        },
+      ]
+    },
+
   ]
 }
 
@@ -211,33 +609,76 @@ function commentClick(index,nowID){
     commentSerial.value=nowID;
     console.log("正在回复："+commentSerial.value)
   }
-
 }
 
 //发送评论
 function sendComment(id){
 //1.id=-1时为视频评论，一级评论
 
-
   if(id==-1){
-    console.log(myComment.value)
+    comments.value.unshift({
+      commentID: 10030,
+      nickName:userMessage.value.nickName,
+      pkUserId: userMessage.value.pkUserId,
+      avatar:userMessage.value.avatar ,
+      comment: myComment1.value,
+      time: getTime(),
+      commentNum: 0,
+      like: 0,
+      isLike: false, //我是否喜欢了
+      reply: [],
+    });
   }
   // 2.id为具体的评论ID,二级评论
   else {
-    console.log(myComment.value)
-    console.log(commentSerial.value)
+// 添加一个新的回复对象到评论对象的 reply 数组中
+    comments.value[0].reply.push({
+      commentID: 10070,
+      nickName: JSON.parse(localStorage.getItem('user')).nickName,
+      pkUserId: JSON.parse(localStorage.getItem('user')).pkUserId,
+      avatar: JSON.parse(localStorage.getItem('user')).avatar ,
+      toName: '小明', //回复人姓名
+      toCommentID: 1001, //回复人ID
+      comment: myComment2.value,
+      time: getTime(),
+      commentNum: 0,
+      like: 0,
+      isLike: false, //我是否喜欢了
+    });
   }
-  myComment.value='';
+  myComment1.value='';
+  myComment2.value='';
+  //更改父组件
+  props.incrementCommentedCount(); // 触发父组件的方法
+}
+
+//获取当前时间
+function getTime(){
+  const now = new Date();
+  const year = now.getFullYear(); // 获取当前年份
+  const month = now.getMonth() + 1; // 获取当前月份
+  const day = now.getDate(); // 获取当前日期
+  const hour = now.getHours(); // 获取当前小时
+  const minute = now.getMinutes(); // 获取当前分钟
+
+// 格式化为 "2019年9月16日 18:43" 的格式
+  const formattedDateTime = `${year}年${month}月${day}日 ${hour}:${minute}`;
+  return formattedDateTime
 }
 
 //点赞  取消点赞
-function likeClick(id){
+function likeClick(index){
   if (!localStorage.getItem('user')) {
     ElMessage.error('您还未登录')
   }else {
   //告诉后端我要重复相反的操作
-  console.log(id)
-  //
+    //当为取消点赞
+    if(comments.value[index].isLike)
+      comments.value[index].like--;
+    else {
+      comments.value[index].like++;
+    }
+    comments.value[index].isLike=! comments.value[index].isLike
 }
 }
 
@@ -247,7 +688,6 @@ function bindChild(){
   for (let i = 0; i < comments.value.length; i++) {
     // 获取当前评论对象
     const comment = comments.value[i];
-
     // 为当前评论对象添加 isVisible 属性，并将其值设置为 false
     comment.isVisible = false;
     comment.isComment=false;
@@ -286,6 +726,7 @@ function toUser(userID) {
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: #23C4E0
 }
 .user-image{
   width: 35px;
@@ -296,7 +737,8 @@ function toUser(userID) {
 }
 .mainContainer{
   flex: 1;
-  background-color:oldlace;
+  /*background-color:oldlace;*/
+  overflow-y: auto;
 }
 .first-comment{
   margin-top: 25px;

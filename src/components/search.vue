@@ -9,21 +9,23 @@
                 <el-row class="video-lists-css">
                   <!--  搜索结果-->
                   <el-col
-                      v-for="(video, index) in 20"
+                      v-for="(video, index) in videoResults"
                       :key="index"
                       :xs="24" :sm="12" :md="8" :lg="4"
                   >
                     <el-card class="video-card">
                       <div style="position: relative; display: flex;flex-direction: column;width: 100%;height: 100%">
-                        <img style="height: 100%;width: 100%;flex: 3;object-fit: scale-down;border-bottom: #00000052 solid 0.1px;"
-                             src="../assets/image/test2.jpg"
-                             @click="playVideo(index)"
-                        />
+                        <div style=" flex: 3;object-fit: scale-down;border-bottom: #00000052 solid 0.1px;overflow:hidden;display: flex;justify-content: center;align-items: center;">
+                          <img style="max-width: 239px;max-height: 187px"
+                               :src=video.videoCover
+                               @click="playVideo(index)"
+                          />
+                        </div>
                         <div style="position: absolute;display: flex;top: 60%;left: 5%;">
-                          <img src="../assets/image/emptyLike.svg"  style="width: 25px;height: 25px;margin-right: 10px">{{20}}
+                          <img src="../assets/image/emptyLike.svg" style="width: 25px;height: 25px;margin-right: 10px">{{ video.likedCount }}
                         </div>
                         <div style="flex: 1">
-                          <span class="title" >Yummy hamburger</span>
+                          <span class="title">{{ video.videoDescription }}</span>
                         </div>
                       </div>
                     </el-card>
@@ -56,6 +58,7 @@ import {ElMessage, TabsPaneContext} from 'element-plus'
 import router from "@/router";
 import PlayerVideo from "@/components/PlayerVideo";
 import exit from "@/assets/image/exit.svg"
+import {searchVideo} from "@/api/videoHandle";
 
 const route = useRoute()
 //他人主页的所有信息
@@ -65,18 +68,21 @@ const userMessage=ref('');
 
 let searchText=ref('')
 let videoResults=ref('')
-const cid = ref('');
+const cid = "搜索";
 const num=ref(0)
-const tip="search"
+const tip=ref('')
 onMounted(() => {
   //接收搜索结果//
   searchText.value=route.query.searchText;
-  cid.value=searchText.value;
   console.log(searchText.value)
-  console.log("初始化了一次")
   //像后端发送搜索内容
   //向后端获取资料
-
+  searchVideo({
+    searchQuery:searchText.value
+  }).then(res=> {
+        videoResults.value=res.data
+  })
+  tip.value=searchText.value
 });
 
 //监听搜索结果
@@ -85,9 +91,15 @@ watch(
     (newSearchText) => {
       searchText.value = newSearchText || '';
       // 在这里进行搜索结果的更新或其他相关操作
-      cid.value=searchText.value
       //像后端发送搜索内容
       //向后端获取资料
+
+      searchVideo({
+        searchQuery:searchText.value
+      }).then(res=> {
+        videoResults.value=res.data
+      })
+      tip.value=searchText.value
     }
 );
 
@@ -98,7 +110,7 @@ const visibleVideo = ref(false)
 function playVideo(index) {
   visibleVideo.value=true
   num.value=index;
-  console.log(visibleVideo.value)
+  tip.value=searchText.value
 }
 
 //退出视频
@@ -170,6 +182,7 @@ function exitClick(){
   width: 90%;
   margin-left: auto;
   margin-right: auto;
+  margin-top: 10px;
 }
 
 .show-video{

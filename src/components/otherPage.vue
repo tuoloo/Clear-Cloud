@@ -4,25 +4,24 @@
       <div class="topMessage">
         <div style="flex: 0.2"></div>
         <div class="user-image">
-          <img :src=userMessage.userImage>
+          <img :src=userMessage.avatar>
           <div class="user-message">
-            <span>{{ userMessage.userName }}</span>
+            <span>{{ userMessage.nickName }}</span>
             <div class="text1">
               关注
-              <span style="color: black;cursor: pointer">{{ userMessage.userAttentionNums }}</span>
+              <span style="color: black;cursor: pointer">{{ userMessage.followCount }}</span>
               &nbsp; 粉丝
-              <span  style="color: black;cursor: pointer">{{ userMessage.likeNums }}</span>
+              <span  style="color: black;cursor: pointer">{{ userMessage.fanCount}}</span>
               &nbsp;获赞
-              <span style="color: black">{{ userMessage.userFanNums }}</span>
+              <span style="color: black">{{ userMessage.likedCount  }}</span>
             </div>
-            <span class="text1">{{ userMessage.userWrite }}</span>
+            <span class="text1">{{ userMessage.signature }}</span>
           </div>
         </div>
         <div style="flex: 1"></div>
         <div class="buttons" style="flex: 1">
-          <button v-show="userMessage.state === 0" @click="follow()" style="background-color: #D9578B">关注</button>
-          <button v-show="userMessage.state === 1" @click="unfollow()" style="background-color:rgb(161 164 175);">已关注</button>
-          <button v-show="userMessage.state === 2" @click="unfollow()" style="background-color:rgb(161 164 175);">相互关注</button>
+          <button v-show="!userMessage.follow" @click="followClick()" style="background-color: #D9578B">关注</button>
+          <button v-show="userMessage.follow" @click="unfollowClick()" style="background-color:rgb(161 164 175);">已关注</button>
         </div>
       </div>
       <div class="videoList">
@@ -34,21 +33,23 @@
                 <el-row class="video-lists-css">
                   <!--   作品列-->
                   <el-col
-                      v-for="(video, index) in 20"
+                      v-for="(video, index) in workList"
                       :key="index"
                       :xs="24" :sm="12" :md="8" :lg="4"
                   >
                     <el-card class="video-card">
                       <div style="position: relative; display: flex;flex-direction: column;width: 100%;height: 100%">
-                        <img style="height: 100%;width: 100%;flex: 3;object-fit: scale-down;border-bottom: #00000052 solid 0.1px;"
-                             src="../assets/image/test2.jpg"
-                             @click="playVideo(index)"
-                        />
+                        <div style=" flex: 3;object-fit: scale-down;border-bottom: #00000052 solid 0.1px;overflow:hidden;display: flex;justify-content: center;align-items: center;">
+                          <img style="max-width: 239px;max-height: 187px"
+                               :src=video.videoCover
+                               @click="playVideo(index)"
+                          />
+                        </div>
                         <div style="position: absolute;display: flex;top: 60%;left: 5%;">
-                          <img src="../assets/image/emptyLike.svg"  style="width: 25px;height: 25px;margin-right: 10px">{{20}}
+                          <img src="../assets/image/emptyLike.svg" style="width: 25px;height: 25px;margin-right: 10px">{{ video.likedCount }}
                         </div>
                         <div style="flex: 1">
-                          <span class="title" >Yummy hamburger</span>
+                          <span class="title">{{ video.videoDescription }}</span>
                         </div>
                       </div>
                     </el-card>
@@ -68,7 +69,7 @@
                :fullscreen="true"
     >
       <img :src="exit" class="exit-button" @click="exitClick">
-      <PlayerVideo class="view-video-list" :info="cid" :serial="num"></PlayerVideo>
+      <PlayerVideo class="view-video-list" :info="cid" :serial="num" :tip="userMessage.pkUserId"></PlayerVideo>
     </el-dialog>
   </div>
 </template>
@@ -82,10 +83,16 @@ import {ElMessage, TabsPaneContext} from 'element-plus'
 import router from "@/router";
 import PlayerVideo from "@/components/PlayerVideo";
 import exit from "@/assets/image/exit.svg"
+import {follow, getUserInformation, unfollow} from "@/api/userHandle";
 
 const route = useRoute()
 //他人主页的所有信息
 const userMessage=ref('');
+//他人主页的作品
+let workList=ref('')
+
+//可笑的state
+let state=ref(0)
 //关注列表  不关注0 关注1  相互关注2
 //初始化   视频列表要是ref数据
 onMounted(() => {
@@ -94,38 +101,41 @@ onMounted(() => {
   let userId=route.query.userId;
   console.log(userId)
   //向后端获取资料
-  userMessage.value = {
-    userId: 1,
-    userImage: image1,
-    userName: "地球爆炸",
-    userWrite: "想死了，但是死的另有其人",
-    userAttentionNums: 12,
-    userFanNums: 123,
-    likeNums: 45,
-    state:2
-  }
+  getUserInformation({
+    userId:userId
+  }).then(res=>{
+    if(res.code==1){
+      userMessage.value=res.data;
+      workList.value=userMessage.value.videoInfoList;
+    }else {
+      ElMessage({
+        message: res.message,
+        type: 'warning',
+      })
+    }
+  })
 
 });
 
 //关注逻辑
 //关注
-function follow() {
-  //关注了别人 向后端询问是1还是2
-  userMessage.value.state=1;
-  console.log("关注")
+function followClick() {
+  follow({
+    targetUserId:userMessage.value.pkUserId
+  })
+  userMessage.value.follow=!userMessage.value.follow
+
 }
+
 //取消关注
-function unfollow() {
-  //
-  userMessage.value.state=0;
-  console.log("取消关注")
+function unfollowClick() {
+  unfollow({
+    targetUserId:userMessage.value.pkUserId
+  })
+  userMessage.value.follow=!userMessage.value.follow
 }
-
-//切换作品 喜欢 收藏
 const activeName = ref('first') //默认值
-//到时候要传入他人的id
-const cid = ref('作品');
-
+const cid = "作品"
 const num=ref(0)
 //查看视频
 const visibleVideo = ref(false)
@@ -249,6 +259,7 @@ function exitClick(){
   width: 90%;
   margin-left: auto;
   margin-right: auto;
+  margin-top: 10px;
 }
 
 .show-video{

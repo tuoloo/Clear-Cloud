@@ -1,6 +1,5 @@
 import {createRouter, createWebHashHistory} from 'vue-router'
 import home from '@/view/homeEnter'
-import test from '@/view/test'
 import userHome from '@/view/handle'
 import {ElMessage} from 'element-plus'
 import search from '@/components/search'
@@ -14,11 +13,6 @@ const router=createRouter({
             path: '/',
             name: 'home',
             component: home,
-        },
-        {
-            path:'/test',
-            name:'test',
-            component:test,
         },
         {
             path: '/handle',

@@ -34,7 +34,7 @@ const http ={
             method: 'delete',
             url:url
         }
-        if(params) config.data = params
+        if(params) config.params = params
         return request(config)
     },
 
