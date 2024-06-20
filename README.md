@@ -1,27 +1,21 @@
-# video
+# 简介
 
-## Project setup
-```
-npm install
-```
+**前言**：本项目为**第二届七牛云1024创作节作品，赛时两周之作**。
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+网页短视频应用是一种基于移动互联网技术的新型媒体形式，它以短、快、爽为特点，满足用户碎片化时间的娱
+乐需求。同时，短视频应用也为用户提供了一个展示自我、分享生活的平台。
 
-### Compiles and minifies for production
-```
-npm run build
-```
+## 项目展示
 
-### Lints and fixes files
-```
-npm run lint
-```
+详情可以观看在线演示视频：[项目展示_哔哩哔哩_bilibili](https://www.bilibili.com/video/BV1Tw411x7hS/?vd_source=b8bea409d0f122f12afd656c5ad3d412)
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+![1709713035605](assets/1709713035605.png)
 
-### 项目展示视频【如果直接打不开请复制链接到浏览器】
-[https://www.bilibili.com/video/BV1Tw411x7hS/?spm_id_from=333.999.0.0](url)
+![1709713331081](assets/1709713331081.png)
+
+![1709713373252](assets/1709713373252.png)
+
+# 项目设计方案
+
+详情可以查看 **docs/项目设计方案.docx**
+
