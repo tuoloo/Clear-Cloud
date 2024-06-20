@@ -9,11 +9,6 @@
 
 详情可以观看在线演示视频：[项目展示_哔哩哔哩_bilibili](https://www.bilibili.com/video/BV1Tw411x7hS/?vd_source=b8bea409d0f122f12afd656c5ad3d412)
 
-![1709713035605](assets/1709713035605.png)
-
-![1709713331081](assets/1709713331081.png)
-
-![1709713373252](assets/1709713373252.png)
 
 # 项目设计方案
 
